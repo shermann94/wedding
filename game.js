@@ -51,7 +51,7 @@ schema:'public',
 table:'game_state'
 },
 (payload) => {
-console.log("Answer received", payload)
+  
 document.getElementById("scenario").innerText =
 payload.new.scenario
 
@@ -75,7 +75,7 @@ schema:'public',
 table:'answers'
 },
 (payload) => {
-
+console.log(payload.new)
 const answer = payload.new.answer
 
 let div = document.createElement("div")

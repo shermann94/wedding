@@ -85,7 +85,6 @@ div.className = "answer-item"
 div.innerText = answer
 
 document.getElementById("answers").prepend(div)
-container.prepend(div)
 
 updateCounter()
 

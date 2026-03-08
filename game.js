@@ -51,7 +51,7 @@ schema:'public',
 table:'game_state'
 },
 (payload) => {
-
+console.log("Answer received", payload)
 document.getElementById("scenario").innerText =
 payload.new.scenario
 
@@ -66,7 +66,7 @@ payload.new.scenario
 // ======================
 
 client
-.channel('answers_feed')
+.channel('answers-channel')
 .on(
 'postgres_changes',
 {

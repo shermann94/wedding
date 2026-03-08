@@ -11,19 +11,31 @@
 
 <body>
 
-<h1>Marriage Advice Game 💍</h1>
+<div class="game-container">
 
+<h1 class="title">💍 Marriage Advice Game</h1>
+
+<div class="scenario-card">
 <h2 id="scenario">Loading scenario...</h2>
+</div>
 
-<h3 id="counter">0 / 100 submissions</h3>
+<div class="counter" id="counter">
+0 / 100 submissions
+</div>
 
-<div id="answers"></div>
+<div id="answers" class="answers-box"></div>
 
-<br>
+<div class="controls">
 
 <button onclick="startRound()">Start Round</button>
+
 <button onclick="closeRound()">Close Round</button>
+
 <button onclick="nextRound()">Next Round</button>
+
+</div>
+
+</div>
 
 <script src="game.js"></script>
 

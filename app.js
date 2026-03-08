@@ -29,7 +29,31 @@ async function loadScenario(){
 
 loadScenario()
 
+client
+.channel('game-state-channel')
+.on(
+  'postgres_changes',
+  {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'game_state'
+  },
+  (payload) => {
 
+    console.log("Scenario updated", payload)
+
+    const newScenario = payload.new.scenario
+
+    document.getElementById("scenario").innerText = newScenario
+
+    // re-enable submit button for new round
+    document.querySelector("button").disabled = false
+
+    document.getElementById("answer").value = ""
+
+  }
+)
+.subscribe()
 
 // Submit advice
 async function submitAdvice(){

@@ -2,30 +2,51 @@
 <html>
 
 <head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Marriage Advice Game</title>
+
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 </head>
 
 <body>
 
-<h1>Marriage Advice Game 💍</h1>
+<div class="container">
 
-<p id="scenario">
-If the groom forgets the anniversary, what advice would you give?
+<h1 class="title">💍 Marriage Advice Game</h1>
+
+<div class="scenario-box">
+<p id="scenario">Loading scenario...</p>
+</div>
+
+<input 
+id="name" 
+class="input"
+placeholder="Enter your name"
+/>
+
+<textarea
+id="answer"
+class="input"
+placeholder="Your advice..."
+maxlength="120"
+></textarea>
+
+<button onclick="submitAdvice()" class="submit-btn">
+Submit Advice
+</button>
+
+<p class="hint">
+Watch the big screen for results!
 </p>
 
-<input id="name" placeholder="Enter your name"/>
-
-<br><br>
-
-<textarea id="answer" maxlength="120" placeholder="Your advice here..."></textarea>
-
-<br><br>
-
-<button onclick="submitAdvice()">Submit</button>
+</div>
 
 <script src="app.js"></script>
 
 </body>
+
 </html>

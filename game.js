@@ -8,53 +8,95 @@ const client = supabase.createClient(
 
 let maxAnswers = 100
 
+
+// ======================
+// Load Scenario
+// ======================
+
 async function loadScenario(){
 
-const { data } = await client
+const { data, error } = await client
 .from("game_state")
 .select("*")
 .limit(1)
 .single()
 
+if(error){
+console.log(error)
+return
+}
+
 document.getElementById("scenario").innerText = data.scenario
 maxAnswers = data.max_answers
+
+updateCounter()
 
 }
 
 loadScenario()
 
-// realtime scenario updates
+
+
+// ======================
+// Realtime Scenario Updates
+// ======================
+
 client
 .channel('game_state_updates')
 .on(
 'postgres_changes',
-{ event:'UPDATE', schema:'public', table:'game_state' },
+{
+event:'UPDATE',
+schema:'public',
+table:'game_state'
+},
 (payload) => {
 
-document.getElementById("scenario").innerText = payload.new.scenario
+document.getElementById("scenario").innerText =
+payload.new.scenario
 
-})
+}
+)
 .subscribe()
 
-// realtime answers feed
+
+
+// ======================
+// Realtime Answers Feed
+// ======================
+
 client
 .channel('answers_feed')
 .on(
 'postgres_changes',
-{ event:'INSERT', schema:'public', table:'answers' },
+{
+event:'INSERT',
+schema:'public',
+table:'answers'
+},
 (payload) => {
 
 const answer = payload.new.answer
 
 let div = document.createElement("div")
+
+div.className = "answer-item"
+
 div.innerText = answer
 
 document.getElementById("answers").prepend(div)
 
 updateCounter()
 
-})
+}
+)
 .subscribe()
+
+
+
+// ======================
+// Update Submission Counter
+// ======================
 
 async function updateCounter(){
 
@@ -67,6 +109,12 @@ count + " / " + maxAnswers + " submissions"
 
 }
 
+
+
+// ======================
+// Start Round
+// ======================
+
 async function startRound(){
 
 await client
@@ -76,6 +124,12 @@ await client
 
 }
 
+
+
+// ======================
+// Close Round
+// ======================
+
 async function closeRound(){
 
 await client
@@ -84,6 +138,12 @@ await client
 .eq("id",1)
 
 }
+
+
+
+// ======================
+// Next Round
+// ======================
 
 async function nextRound(){
 

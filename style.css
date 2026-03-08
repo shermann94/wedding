@@ -185,3 +185,11 @@ box-shadow:0 6px 14px rgba(0,0,0,0.1);
 .controls button:hover{
 background:#ffa3b1;
 }
+
+.answers-box{
+border:3px solid red;
+min-height:200px;
+display:flex;
+flex-direction:column;
+gap:20px;
+}

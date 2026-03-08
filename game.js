@@ -46,15 +46,13 @@ client
 .on(
 'postgres_changes',
 {
-event: '*',
+event: 'INSERT',
 schema: 'public',
 table: 'answers'
 },
 (payload) => {
 
-console.log("Realtime payload:", payload)
-
-if(payload.eventType === "INSERT"){
+console.log("Answer received:", payload)
 
 const answer = payload.new.answer
 
@@ -71,43 +69,10 @@ container.prepend(div)
 updateCounter()
 
 }
-
-}
 )
-.subscribe()
-
-
-
-// ======================
-// Realtime Answers Feed
-// ======================
-
-client
-.channel('answers-channel')
-.on(
-'postgres_changes',
-{
-event:'INSERT',
-schema:'public',
-table:'answers'
-},
-(payload) => {
-console.log(payload.new)
-const answer = payload.new.answer
-
-let div = document.createElement("div")
-
-div.className = "answer-item"
-
-div.innerText = answer
-
-document.getElementById("answers").prepend(div)
-
-updateCounter()
-
-}
-)
-.subscribe()
+.subscribe((status) => {
+console.log("Realtime status:", status)
+})
 
 
 

@@ -38,22 +38,39 @@ loadScenario()
 
 
 // ======================
-// Realtime Scenario Updates
+// Realtime Answers Feed
 // ======================
 
 client
-.channel('game_state_updates')
+.channel('answers-channel')
 .on(
 'postgres_changes',
 {
-event:'UPDATE',
-schema:'public',
-table:'game_state'
+event: '*',
+schema: 'public',
+table: 'answers'
 },
 (payload) => {
-  
-document.getElementById("scenario").innerText =
-payload.new.scenario
+
+console.log("Realtime payload:", payload)
+
+if(payload.eventType === "INSERT"){
+
+const answer = payload.new.answer
+
+const container = document.getElementById("answers")
+
+let div = document.createElement("div")
+
+div.className = "answer-item"
+
+div.innerText = answer
+
+container.prepend(div)
+
+updateCounter()
+
+}
 
 }
 )

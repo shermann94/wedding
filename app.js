@@ -14,7 +14,7 @@ async function loadScenario(){
   const { data, error } = await client
   .from("game_state")
   .select("*")
-  .limit(1)
+  .eq("id",1)
   .single()
 
   if(error){

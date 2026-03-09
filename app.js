@@ -42,10 +42,15 @@ showAnswerScreen()
 
 async function joinGame(){
 
+// get user inputs
 const name = document.getElementById("name").value
 const table = document.getElementById("table").value
-const code = document.getElementById("roomcode").value.trim().replace(/\s/g,'').toUpperCase()
+const code = document.getElementById("roomcode").value
+.trim()
+.replace(/\s/g,'')
+.toUpperCase()
 
+// validate fields
 if(!name || !table || !code){
 
 document.getElementById("join-error").innerText =
@@ -55,16 +60,20 @@ return
 
 }
 
-
-// get game settings
-const { data: room } = await client
+// get game settings from Supabase
+const { data: room, error } = await client
 .from("game_state")
 .select("*")
 .limit(1)
 .single()
 
-roomCode = room.room_code
-maxPlayers = room.max_players
+if(error){
+console.error(error)
+return
+}
+
+const roomCode = room.room_code
+const maxPlayers = room.max_players
 
 // check room code
 if(code !== roomCode){
@@ -76,12 +85,11 @@ return
 
 }
 
-
 // check player count
 const { count } = await client
 .from("players")
 .select("*",{ count:'exact', head:true })
-.eq("room_code",roomCode)
+.eq("room_code", roomCode)
 
 if(count >= maxPlayers){
 
@@ -92,28 +100,30 @@ return
 
 }
 
-
-// add player
-await client
+// insert player into database
+const { error: insertError } = await client
 .from("players")
 .insert([{
-name:name,
-table_no:table,
-room_code:roomCode
+name: name,
+table_no: table,
+room_code: roomCode
 }])
 
+if(insertError){
+console.error(insertError)
+return
+}
 
-// save player info locally so refresh works
+// save player info locally
 localStorage.setItem("joined","true")
 localStorage.setItem("playerName", name)
 localStorage.setItem("tableNo", table)
-localStorage.setItem("roomCode", roomCode)  
+localStorage.setItem("roomCode", roomCode)
 
+// move to waiting screen
 showWaiting()
 
 }
-
-
 
 // ======================
 // SHOW WAITING SCREEN
@@ -189,37 +199,42 @@ data.scenario
 
 async function submitAdvice(){
 
+// prevent duplicate submissions
 if(localStorage.getItem("submitted") === "true"){
-
 alert("You already submitted!")
-
 return
-
 }
 
+// get answer text
 const answer = document.getElementById("answer").value
 
 if(!answer){
-
 return
-
 }
 
+// get player name from local storage
+const playerName = localStorage.getItem("playerName")
 
-// insert answer
-await client
+// insert into Supabase
+const { error } = await client
 .from("answers")
 .insert([{
-answer:answer,
-scenario_id:1
+name: playerName,
+answer: answer
 }])
 
+// show error if something failed
+if(error){
+console.error("Submit error:", error)
+alert("Something went wrong submitting your advice.")
+return
+}
 
+// mark as submitted
 localStorage.setItem("submitted","true")
 
-
+// switch screens
 document.getElementById("answer-screen").style.display="none"
-
 document.getElementById("submitted-screen").style.display="block"
 
 }

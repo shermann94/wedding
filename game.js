@@ -147,6 +147,7 @@ document.getElementById("scenario-card").style.display = "none"
 // ===============================
 // REALTIME ANSWER FEED
 // ===============================
+console.log("Listening for answers...")
 
 client
 .channel("answers-channel")

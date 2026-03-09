@@ -172,12 +172,21 @@ client
 
 async function showAnswerScreen(){
 
-// hide all other screens
-document.getElementById("join-screen").style.display="none"
-document.getElementById("waiting-screen").style.display="none"
+// hide other screens
+document.getElementById("join-screen").style.display = "none"
+document.getElementById("waiting-screen").style.display = "none"
+
+// check if player already submitted
+if(localStorage.getItem("submitted") === "true"){
+
+document.getElementById("submitted-screen").style.display = "block"
+
+return
+
+}
 
 // show answer screen
-document.getElementById("answer-screen").style.display="block"
+document.getElementById("answer-screen").style.display = "block"
 
 // load scenario
 const { data } = await client

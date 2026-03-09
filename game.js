@@ -144,7 +144,28 @@ document.getElementById("scenario-card").style.display = "none"
 )
 .subscribe()
 
+// ===============================
+// REALTIME ANSWER FEED
+// ===============================
 
+client
+.channel("answers-channel")
+.on(
+'postgres_changes',
+{
+event:'INSERT',
+schema:'public',
+table:'answers'
+},
+(payload)=>{
+
+const answer = payload.new.answer
+
+spawnAnswerBubble(answer)
+
+}
+)
+.subscribe()
 
 // ===============================
 // HOST CONTROL FUNCTIONS
@@ -223,5 +244,29 @@ document.getElementById("answers").innerHTML=""
 
 // reload game state
 loadGame()
+
+}
+
+// ===============================
+// Spawn bubbles
+// ===============================
+function spawnAnswerBubble(text){
+
+const bubble = document.createElement("div")
+
+bubble.className = "answer-item"
+
+bubble.innerText = text
+
+// random position
+bubble.style.left = Math.random() * 70 + "%"
+bubble.style.top = Math.random() * 60 + "%"
+
+document.getElementById("answers").appendChild(bubble)
+
+// remove bubble after animation
+setTimeout(()=>{
+bubble.remove()
+},4000)
 
 }

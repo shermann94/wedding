@@ -99,69 +99,6 @@ document.getElementById("waiting-screen").style.display="block"
 
 }
 
-
-
-// ======================
-// UPDATE PLAYER COUNT
-// ======================
-
-async function updatePlayerCount(){
-
-const { count } = await client
-.from("players")
-.select("*",{ count:'exact', head:true })
-
-document.getElementById("player-count").innerText =
-count + " / " + maxPlayers + " players joined"
-
-}
-
-
-
-// ======================
-// REALTIME PLAYER COUNT
-// ======================
-
-client
-.channel("players-channel")
-.on(
-'postgres_changes',
-{
-event:'INSERT',
-schema:'public',
-table:'players'
-},
-(payload)=>{
-
-updatePlayerCount()
-
-}
-)
-.subscribe()
-
-
-
-// ======================
-// JOIN TIMER
-// ======================
-
-let timeLeft = 60
-
-setInterval(()=>{
-
-timeLeft--
-
-if(document.getElementById("join-timer")){
-
-document.getElementById("join-timer").innerText =
-"Game starting in " + timeLeft + " seconds"
-
-}
-
-},1000)
-
-
-
 // ======================
 // LISTEN FOR ROUND START
 // ======================

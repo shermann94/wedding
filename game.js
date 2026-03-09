@@ -29,8 +29,11 @@ document.getElementById("scenario").innerText =
 data.scenario
 
 // Display the room code for players to join
+const formattedCode =
+data.room_code.slice(0,4) + "-" + data.room_code.slice(4)
+
 document.getElementById("room-code").innerText =
-data.room_code
+formattedCode
 
 // Update how many players have joined
 updatePlayerCount()

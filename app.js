@@ -6,7 +6,7 @@ supabaseUrl,
 supabaseKey
 )
 
-let roomCode = ""
+let roomCode = "love2026"
 let maxPlayers = 100
 
 

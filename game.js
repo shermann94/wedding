@@ -17,38 +17,40 @@ const client = supabase.createClient(
 // from the "game_state" table
 async function loadGame(){
 
-const { data } = await client
-.from("game_state")
-.select("*")
-.limit(1)
-.single()
+  // Get game state from Supabase
+  const { data, error } = await client
+    .from("game_state")
+    .select("*")
+    .limit(1)
+    .single()
 
-// show room code
-document.getElementById("room-code").innerText =
-data.room_code
+  if(error){
+    console.error(error)
+    return
+  }
 
+  // Format room code (LOVE2026 → LOVE-2026)
+  const formattedCode =
+    data.room_code.slice(0,4) + "-" + data.room_code.slice(4)
 
-// check if round is already open
-if(data.round_open === true){
+  // Display room code
+  document.getElementById("room-code").innerText =
+    formattedCode
 
-document.getElementById("scenario-card").style.display = "block"
+  // Update how many players joined
+  updatePlayerCount()
 
-document.getElementById("scenario").innerText =
-data.scenario
+  // If round already started (important for refresh)
+  if(data.round_open === true){
 
-}
+    // show scenario card
+    document.getElementById("scenario-card").style.display = "block"
 
-}
+    // show scenario text
+    document.getElementById("scenario").innerText =
+      data.scenario
 
-// Display the room code for players to join
-const formattedCode =
-data.room_code.slice(0,4) + "-" + data.room_code.slice(4)
-
-document.getElementById("room-code").innerText =
-formattedCode
-
-// Update how many players have joined
-updatePlayerCount()
+  }
 
 }
 

@@ -111,8 +111,6 @@ localStorage.setItem("roomCode", roomCode)
 
 showWaiting()
 
-updatePlayerCount()
-
 }
 
 

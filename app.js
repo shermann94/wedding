@@ -9,7 +9,32 @@ supabaseKey
 let roomCode = "LOVE-2026"
 let maxPlayers = 100
 
+// ======================
+// AUTO REJOIN IF REFRESH
+// ======================
 
+window.onload = async function(){
+
+if(localStorage.getItem("joined") === "true"){
+
+showWaiting()
+
+// check if round already started
+const { data } = await client
+.from("game_state")
+.select("*")
+.limit(1)
+.single()
+
+if(data.round_open === true){
+
+showAnswerScreen()
+
+}
+
+}
+
+}
 
 // ======================
 // JOIN GAME
@@ -78,7 +103,11 @@ room_code:roomCode
 }])
 
 
+// save player info locally so refresh works
 localStorage.setItem("joined","true")
+localStorage.setItem("playerName", name)
+localStorage.setItem("tableNo", table)
+localStorage.setItem("roomCode", roomCode)  
 
 showWaiting()
 

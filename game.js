@@ -1,102 +1,158 @@
+// URL of your Supabase project
 const supabaseUrl = "https://dmztipmhrwxdjnogznvi.supabase.co"
+
+// URL of your Supabase project
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU"
 
+// Create a Supabase client so we can read/write database
 const client = supabase.createClient(
   supabaseUrl,
   supabaseKey
 )
+// ===============================
+// LOAD GAME DATA
+// ===============================
 
-let maxAnswers = 100
+// This function loads the current game settings
+// from the "game_state" table
+async function loadGame(){
 
-
-// ======================
-// Load Scenario
-// ======================
-
-async function loadScenario(){
-
-const { data, error } = await client
+// Query Supabase for the single row of game_state
+const { data } = await client
 .from("game_state")
 .select("*")
 .limit(1)
 .single()
 
-if(error){
-console.log(error)
-return
+// Display the scenario on the big screen
+document.getElementById("scenario").innerText =
+data.scenario
+
+// Display the room code for players to join
+document.getElementById("room-code").innerText =
+data.room_code
+
+// Update how many players have joined
+updatePlayerCount()
+
 }
 
-document.getElementById("scenario").innerText = data.scenario
-maxAnswers = data.max_answers
+// Run this function when the page loads
+loadGame()
 
-updateCounter()
+// ===============================
+// UPDATE PLAYER COUNT
+// ===============================
+
+// This function counts how many players joined
+// and updates the lobby display
+async function updatePlayerCount(){
+
+// Ask Supabase for the total number of players
+const { count } = await client
+.from("players")
+.select("*",{ count:'exact', head:true })
+
+// Update the text on the screen
+document.getElementById("player-count").innerText =
+count + " / 100 players joined"
 
 }
 
-loadScenario()
+
+
+// ===============================
+// REALTIME PLAYER JOIN LISTENER
+// ===============================
+
+// Subscribe to realtime database changes
+// whenever someone joins the game
+client
+.channel("players-channel")
+.on(
+'postgres_changes',
+{
+event:'INSERT',      // Trigger when a new row is added
+schema:'public',
+table:'players'
+},
+(payload)=>{
+
+// Update the lobby player count
+updatePlayerCount()
+
+}
+)
+.subscribe()
 
 
 
-// ======================
-// Realtime Answers Feed
-// ======================
+// ===============================
+// REALTIME ANSWER FEED
+// ===============================
 
+// Listen for new answers submitted by players
 client
 .channel('answers-channel')
 .on(
 'postgres_changes',
 {
-event: 'INSERT',
-schema: 'public',
-table: 'answers'
+event:'INSERT',      // Trigger when a new answer is inserted
+schema:'public',
+table:'answers'
 },
 (payload) => {
 
-console.log("Answer received:", payload)
-
+// Extract the answer text from the database row
 const answer = payload.new.answer
 
+// Get the container that holds floating bubbles
 const container = document.getElementById("answers")
 
+// Create a new HTML div element
 let div = document.createElement("div")
 
+// Apply the speech bubble styling
 div.className = "answer-item"
 
+// Set the text content inside the bubble
 div.innerText = answer
 
-container.prepend(div)
+// Get width of the container
+const containerWidth = container.offsetWidth
 
-updateCounter()
+// Generate a random horizontal position
+// so bubbles appear in different places
+const randomX = Math.random() * (containerWidth - 400)
+
+// Position bubble horizontally
+div.style.left = randomX + "px"
+
+// Start bubble from the bottom
+div.style.bottom = "0px"
+
+// Add bubble to the screen
+container.appendChild(div)
+
+// Remove bubble after animation completes
+setTimeout(()=>{
+div.remove()
+},4000)
 
 }
 )
-.subscribe((status) => {
-console.log("Realtime status:", status)
-})
+.subscribe()
 
 
 
-// ======================
-// Update Submission Counter
-// ======================
-
-async function updateCounter(){
-
-const { count } = await client
-.from("answers")
-.select("*",{ count:'exact', head:true })
-
-document.getElementById("counter").innerText =
-count + " / " + maxAnswers + " submissions"
-
-}
+// ===============================
+// HOST CONTROL FUNCTIONS
+// ===============================
 
 
 
-// ======================
-// Start Round
-// ======================
-
+// Start the round
+// This unlocks the answer screen on players' phones
 async function startRound(){
 
 await client
@@ -108,10 +164,8 @@ await client
 
 
 
-// ======================
-// Close Round
-// ======================
-
+// Close the round
+// This stops new submissions
 async function closeRound(){
 
 await client
@@ -123,19 +177,17 @@ await client
 
 
 
-// ======================
-// Next Round
-// ======================
-
+// Start the next round
+// Clears answers from the screen
 async function nextRound(){
 
+// Delete all answers from database
 await client
 .from("answers")
 .delete()
 .gt("id",0)
 
-document.getElementById("answers").innerHTML = ""
-
-updateCounter()
+// Clear bubbles from the screen
+document.getElementById("answers").innerHTML=""
 
 }

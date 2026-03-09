@@ -158,6 +158,7 @@ schema:'public',
 table:'answers'
 },
 (payload)=>{
+console.log("Answer received:", payload)
 
 const answer = payload.new.answer
 

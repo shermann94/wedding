@@ -161,10 +161,12 @@ showAnswerScreen()
 
 async function showAnswerScreen(){
 
+// hide all other screens
+document.getElementById("join-screen").style.display="none"
 document.getElementById("waiting-screen").style.display="none"
 
+// show answer screen
 document.getElementById("answer-screen").style.display="block"
-
 
 // load scenario
 const { data } = await client

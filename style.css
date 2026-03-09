@@ -1,237 +1,535 @@
+/* ================================================= */
+/* GLOBAL PAGE STYLE */
+/* ================================================= */
+
+/* Style applied to the entire page */
 body{
+
+/* remove browser default margins */
 margin:0;
+
+/* use a clean readable font */
 font-family:'Arial', sans-serif;
+
+/* pastel gradient background for wedding vibe */
 background:linear-gradient(135deg,#ffd6e7,#e6d8ff);
+
+/* center content horizontally */
 display:flex;
 justify-content:center;
+
+/* center content vertically */
 align-items:center;
+
+/* ensure full screen height */
 min-height:100vh;
+
+/* base text color */
 color:#444;
+
 }
 
 
-/* ========================= */
-/* PLAYER PAGE (index.html) */
-/* ========================= */
 
+/* ================================================= */
+/* PLAYER PAGE LAYOUT (PHONE UI) */
+/* ================================================= */
+
+/* container used on the player page */
 .container{
+
+/* responsive width */
 width:90%;
+
+/* prevent container from becoming too wide */
 max-width:420px;
+
+/* center text inside container */
 text-align:center;
+
 }
 
+
+
+/* page title on player screen */
 .title{
+
+/* larger text for emphasis */
 font-size:28px;
+
+/* space below title */
 margin-bottom:20px;
+
+/* pastel purple tone */
 color:#7a6ea9;
+
 }
 
+
+
+/* card containing scenario or messages */
 .scenario-box{
+
+/* white card background */
 background:#ffffff;
+
+/* internal padding */
 padding:20px;
+
+/* rounded corners */
 border-radius:16px;
+
+/* space below box */
 margin-bottom:20px;
+
+/* readable font size */
 font-size:18px;
+
+/* spacing between lines */
 line-height:1.4;
+
+/* soft shadow for depth */
 box-shadow:0 8px 20px rgba(0,0,0,0.08);
+
 }
 
+
+
+/* input fields (name / table / room code) */
 .input{
+
+/* full width inputs */
 width:100%;
+
+/* internal spacing */
 padding:14px;
+
+/* space between inputs */
 margin-bottom:15px;
+
+/* remove default borders */
 border:none;
+
+/* rounded corners */
 border-radius:12px;
+
+/* comfortable text size */
 font-size:16px;
+
+/* ensure padding doesn't break layout */
 box-sizing:border-box;
+
+/* light pastel background */
 background:#f6f3ff;
+
 }
 
+
+
+/* textarea specifically */
 textarea{
+
+/* fixed height */
 height:120px;
+
+/* prevent resizing */
 resize:none;
+
 }
 
+
+
+/* submit button styling */
 .submit-btn{
+
+/* full width button */
 width:100%;
+
+/* large padding for touch devices */
 padding:16px;
+
+/* bigger text */
 font-size:18px;
+
+/* bold text */
 font-weight:bold;
+
+/* remove borders */
 border:none;
+
+/* rounded shape */
 border-radius:14px;
+
+/* pink pastel button */
 background:#ffb6c1;
+
+/* white text */
 color:white;
+
+/* pointer cursor */
 cursor:pointer;
+
+/* soft button shadow */
 box-shadow:0 6px 14px rgba(0,0,0,0.08);
+
 }
 
+
+
+/* button hover effect */
 .submit-btn:hover{
+
+/* slightly darker pink */
 background:#ffa3b1;
+
 }
 
+
+
+/* button click animation */
 .submit-btn:active{
+
+/* shrink slightly when pressed */
 transform:scale(0.97);
+
 }
 
+
+
+/* small helper text */
 .hint{
+
+/* spacing above hint */
 margin-top:15px;
+
+/* smaller font */
 font-size:14px;
+
+/* muted grey */
 color:#777;
+
 }
 
 
-/* ========================= */
+
+/* ================================================= */
 /* BIG SCREEN GAME UI */
-/* ========================= */
+/* ================================================= */
 
+/* container used on game.html (big screen) */
 .game-container{
+
+/* stack elements vertically */
 display:flex;
 flex-direction:column;
+
+/* center horizontally */
 align-items:center;
+
+/* align content near top */
 justify-content:flex-start;
+
+/* large spacing for projector readability */
 padding:60px;
+
+/* space between sections */
 gap:40px;
+
+/* full width */
 width:100%;
+
 }
 
-/* game title */
 
+
+/* large game title */
 .game-title{
+
+/* very large text */
 font-size:64px;
+
+/* bold title */
 font-weight:bold;
+
+/* purple tone */
 color:#6b5c8a;
+
+/* center title */
 text-align:center;
+
 }
 
-/* scenario card */
 
-.scenario-card{
-background:white;
-padding:40px;
-border-radius:24px;
-box-shadow:0 12px 30px rgba(0,0,0,0.12);
-max-width:1100px;
-width:90%;
+
+/* ================================================= */
+/* LOBBY (ROOM CODE + PLAYER COUNT) */
+/* ================================================= */
+
+/* lobby section */
+.lobby{
+
+/* center everything */
 text-align:center;
+
+/* space below lobby */
+margin-bottom:30px;
+
 }
 
-.scenario-card h2{
-font-size:42px;
-margin:0;
-line-height:1.4;
+
+
+/* room code displayed on big screen */
+#room-code{
+
+/* extremely large font */
+font-size:72px;
+
+/* bold text */
+font-weight:bold;
+
+/* pink highlight color */
+color:#ff7aa2;
+
+/* vertical spacing */
+margin:10px 0;
+
 }
 
-/* submission counter */
 
-.counter{
+
+/* player count text */
+#player-count{
+
+/* large readable size */
 font-size:30px;
-font-weight:600;
+
+/* neutral grey */
 color:#555;
+
 }
 
-/* answers container */
 
+
+/* ================================================= */
+/* SCENARIO CARD */
+/* ================================================= */
+
+/* scenario card container */
+.scenario-card{
+
+/* white card */
+background:white;
+
+/* large padding */
+padding:40px;
+
+/* rounded edges */
+border-radius:24px;
+
+/* large shadow */
+box-shadow:0 12px 30px rgba(0,0,0,0.12);
+
+/* max width for readability */
+max-width:1100px;
+
+/* responsive width */
+width:90%;
+
+/* center text */
+text-align:center;
+
+}
+
+
+
+/* scenario text */
+.scenario-card h2{
+
+/* large readable size */
+font-size:42px;
+
+/* remove margin */
+margin:0;
+
+/* spacing between lines */
+line-height:1.4;
+
+}
+
+
+
+/* ================================================= */
+/* FLOATING ANSWER BUBBLES */
+/* ================================================= */
+
+/* container where bubbles float */
 .answers-box{
-width:1100px;
-max-width:90%;
-min-height:300px;
 
-display:flex;
-flex-direction:column;
-gap:20px;
-}
-
-
-/* ========================= */
-/* SPEECH BUBBLE ANSWERS */
-/* ========================= */
-
-.answer-item{
+/* allow absolute positioning inside */
 position:relative;
-background:#ffffff;
-padding:18px 24px;
-border-radius:20px;
-font-size:28px;
-max-width:900px;
 
-box-shadow:0 8px 18px rgba(0,0,0,0.1);
+/* large width for big screen */
+width:1100px;
 
-opacity:0;
-transform:translateY(30px);
-animation:answerSlide 0.4s ease forwards;
+/* responsive width */
+max-width:90%;
+
+/* height where bubbles float */
+height:420px;
+
+/* hide bubbles when leaving container */
+overflow:hidden;
+
 }
+
+
+
+/* individual speech bubble */
+.answer-item{
+
+/* absolute so bubbles can float */
+position:absolute;
+
+/* white bubble */
+background:white;
+
+/* internal spacing */
+padding:18px 24px;
+
+/* rounded bubble shape */
+border-radius:20px;
+
+/* readable font */
+font-size:26px;
+
+/* limit width so text wraps nicely */
+max-width:420px;
+
+/* allow long text wrapping */
+word-wrap:break-word;
+white-space:normal;
+
+/* soft bubble shadow */
+box-shadow:0 8px 18px rgba(0,0,0,0.12);
+
+/* start invisible */
+opacity:0;
+
+/* floating animation */
+animation:floatBubble 4s ease forwards;
+
+}
+
+
 
 /* speech bubble tail */
-
 .answer-item::after{
+
 content:"";
+
+/* attach tail to bubble */
 position:absolute;
+
 left:20px;
 bottom:-12px;
 
-width:0;
-height:0;
-
+/* triangle tail shape */
 border-left:12px solid transparent;
 border-right:12px solid transparent;
 border-top:12px solid white;
+
 }
 
 
-/* alternate bubbles (chat style) */
 
-.answer-item:nth-child(even){
-align-self:flex-end;
-background:#ffe9f1;
-}
+/* ================================================= */
+/* FLOATING ANIMATION */
+/* ================================================= */
 
-.answer-item:nth-child(even)::after{
-left:auto;
-right:20px;
-border-top-color:#ffe9f1;
-}
+/* animation used by bubbles */
+@keyframes floatBubble{
 
-
-/* ========================= */
-/* ANSWER ANIMATION */
-/* ========================= */
-
-@keyframes answerSlide{
-
+/* start slightly below */
 0%{
 opacity:0;
-transform:translateY(30px);
+transform:translateY(40px) scale(0.9);
 }
 
-100%{
+/* fade in */
+10%{
 opacity:1;
-transform:translateY(0);
+}
+
+/* remain visible */
+80%{
+opacity:1;
+}
+
+/* float upward and fade */
+100%{
+opacity:0;
+transform:translateY(-240px) scale(1);
 }
 
 }
 
 
-/* ========================= */
+
+/* ================================================= */
 /* HOST CONTROLS */
-/* ========================= */
+/* ================================================= */
 
+/* container holding control buttons */
 .controls{
+
+/* horizontal layout */
 display:flex;
+
+/* spacing between buttons */
 gap:20px;
+
+/* space above controls */
 margin-top:20px;
+
 }
 
+
+
+/* host buttons */
 .controls button{
+
+/* padding for readability */
 padding:16px 32px;
+
+/* large font */
 font-size:20px;
+
+/* remove borders */
 border:none;
+
+/* rounded shape */
 border-radius:14px;
+
+/* pink button color */
 background:#ffb6c1;
+
+/* white text */
 color:white;
+
+/* clickable cursor */
 cursor:pointer;
+
+/* subtle shadow */
 box-shadow:0 6px 14px rgba(0,0,0,0.1);
+
 }
 
+
+
+/* hover state */
 .controls button:hover{
+
+/* darker pink */
 background:#ffa3b1;
+
 }

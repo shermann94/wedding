@@ -6,7 +6,7 @@ supabaseUrl,
 supabaseKey
 )
 
-let roomCode = "love2026"
+let roomCode = "LOVE-2026"
 let maxPlayers = 100
 
 
@@ -19,7 +19,7 @@ async function joinGame(){
 
 const name = document.getElementById("name").value
 const table = document.getElementById("table").value
-const code = document.getElementById("roomcode").value
+const code = document.getElementById("roomcode").value.trim().replace(/\s/g,'').toUpperCase()
 
 if(!name || !table || !code){
 

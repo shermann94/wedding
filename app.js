@@ -220,3 +220,13 @@ document.getElementById("answer-screen").style.display="none"
 document.getElementById("submitted-screen").style.display="block"
 
 }
+
+
+// ======================
+// RESET PLAYER STATE (FOR TESTING)
+// ======================
+
+function resetGame(){
+  localStorage.clear()
+  location.reload()
+}

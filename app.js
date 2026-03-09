@@ -6,109 +6,251 @@ supabaseUrl,
 supabaseKey
 )
 
-let currentScenarioId = 1
+let roomCode = ""
+let maxPlayers = 100
 
-// Load scenario from database
-async function loadScenario(){
 
-  const { data, error } = await client
-  .from("game_state")
-  .select("*")
-  .eq("id",1)
-  .single()
 
-  if(error){
-    console.log(error)
-    return
-  }
+// ======================
+// JOIN GAME
+// ======================
 
-  document.getElementById("scenario").innerText = data.scenario
-  currentScenarioId = data.id
+async function joinGame(){
+
+const name = document.getElementById("name").value
+const table = document.getElementById("table").value
+const code = document.getElementById("roomcode").value
+
+if(!name || !table || !code){
+
+document.getElementById("join-error").innerText =
+"Please fill in all fields"
+
+return
 
 }
 
-loadScenario()
+
+// get game settings
+const { data: room } = await client
+.from("game_state")
+.select("*")
+.limit(1)
+.single()
+
+roomCode = room.room_code
+maxPlayers = room.max_players
+
+// check room code
+if(code !== roomCode){
+
+document.getElementById("join-error").innerText =
+"Wrong room code"
+
+return
+
+}
+
+
+// check player count
+const { count } = await client
+.from("players")
+.select("*",{ count:'exact', head:true })
+.eq("room_code",roomCode)
+
+if(count >= maxPlayers){
+
+document.getElementById("join-error").innerText =
+"Room is full"
+
+return
+
+}
+
+
+// add player
+await client
+.from("players")
+.insert([{
+name:name,
+table_no:table,
+room_code:roomCode
+}])
+
+
+localStorage.setItem("joined","true")
+
+showWaiting()
+
+updatePlayerCount()
+
+}
+
+
+
+// ======================
+// SHOW WAITING SCREEN
+// ======================
+
+function showWaiting(){
+
+document.getElementById("join-screen").style.display="none"
+document.getElementById("waiting-screen").style.display="block"
+
+}
+
+
+
+// ======================
+// UPDATE PLAYER COUNT
+// ======================
+
+async function updatePlayerCount(){
+
+const { count } = await client
+.from("players")
+.select("*",{ count:'exact', head:true })
+
+document.getElementById("player-count").innerText =
+count + " / " + maxPlayers + " players joined"
+
+}
+
+
+
+// ======================
+// REALTIME PLAYER COUNT
+// ======================
 
 client
-.channel('game-state-channel')
+.channel("players-channel")
 .on(
-  'postgres_changes',
-  {
-    event: 'UPDATE',
-    schema: 'public',
-    table: 'game_state'
-  },
-  (payload) => {
+'postgres_changes',
+{
+event:'INSERT',
+schema:'public',
+table:'players'
+},
+(payload)=>{
 
-    console.log("Scenario updated", payload)
+updatePlayerCount()
 
-    const newScenario = payload.new.scenario
-
-    document.getElementById("scenario").innerText = newScenario
-
-    // re-enable submit button for new round
-    document.querySelector("button").disabled = false
-
-    document.getElementById("answer").value = ""
-
-  }
+}
 )
 .subscribe()
 
-// Submit advice
+
+
+// ======================
+// JOIN TIMER
+// ======================
+
+let timeLeft = 60
+
+setInterval(()=>{
+
+timeLeft--
+
+if(document.getElementById("join-timer")){
+
+document.getElementById("join-timer").innerText =
+"Game starting in " + timeLeft + " seconds"
+
+}
+
+},1000)
+
+
+
+// ======================
+// LISTEN FOR ROUND START
+// ======================
+
+client
+.channel('game_state_updates')
+.on(
+'postgres_changes',
+{
+event:'UPDATE',
+schema:'public',
+table:'game_state'
+},
+(payload) => {
+
+if(payload.new.round_open === true){
+
+showAnswerScreen()
+
+}
+
+}
+)
+.subscribe()
+
+
+
+// ======================
+// SHOW ANSWER SCREEN
+// ======================
+
+async function showAnswerScreen(){
+
+document.getElementById("waiting-screen").style.display="none"
+
+document.getElementById("answer-screen").style.display="block"
+
+
+// load scenario
+const { data } = await client
+.from("game_state")
+.select("*")
+.limit(1)
+.single()
+
+document.getElementById("scenario").innerText =
+data.scenario
+
+}
+
+
+
+// ======================
+// SUBMIT ADVICE
+// ======================
+
 async function submitAdvice(){
 
-  const name = document.getElementById("name").value
-  const answer = document.getElementById("answer").value
+if(localStorage.getItem("submitted") === "true"){
 
-  if(!name || !answer){
-    alert("Please enter your name and advice")
-    return
-  }
+alert("You already submitted!")
 
-  // Check if round is open
-  const { data } = await client
-  .from("game_state")
-  .select("*")
-  .eq("id",1)
-  .single()
+return
 
-  if(!data.round_open){
-    alert("Round is not open yet!")
-    return
-  }
+}
 
-  // Check submission count
-  const { count } = await client
-  .from("answers")
-  .select("*",{ count:'exact', head:true })
-  .eq("scenario_id", currentScenarioId)
+const answer = document.getElementById("answer").value
 
-  if(count >= data.max_answers){
-    alert("Round is full!")
-    return
-  }
+if(!answer){
 
-  // Insert answer
-  const { error } = await client
-  .from("answers")
-  .insert([
-    {
-      name: name,
-      answer: answer,
-      scenario_id: currentScenarioId
-    }
-  ])
+return
 
-  if(error){
-    console.log(error)
-    alert("Something went wrong")
-    return
-  }
+}
 
-  // Disable submit button
-  document.querySelector("button").disabled = true
 
-  alert("Advice submitted! Watch the screen for results.")
+// insert answer
+await client
+.from("answers")
+.insert([{
+answer:answer,
+scenario_id:1
+}])
+
+
+localStorage.setItem("submitted","true")
+
+
+document.getElementById("answer-screen").style.display="none"
+
+document.getElementById("submitted-screen").style.display="block"
 
 }

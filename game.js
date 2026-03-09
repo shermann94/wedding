@@ -96,51 +96,35 @@ updatePlayerCount()
 
 // Listen for new answers submitted by players
 client
-.channel('answers-channel')
+.channel('game_state_updates')
 .on(
 'postgres_changes',
 {
-event:'INSERT',      // Trigger when a new answer is inserted
+event:'UPDATE',      // Trigger when a new answer is inserted
 schema:'public',
-table:'answers'
+table:'game_state'
 },
 (payload) => {
 
-// Extract the answer text from the database row
-const answer = payload.new.answer
+// when host starts the round
+if(payload.new.round_open === true){
 
-// Get the container that holds floating bubbles
-const container = document.getElementById("answers")
+// show the scenario card
+document.getElementById("scenario-card").style.display = "block"
 
-// Create a new HTML div element
-let div = document.createElement("div")
+// load the scenario text
+document.getElementById("scenario").innerText =
+payload.new.scenario
 
-// Apply the speech bubble styling
-div.className = "answer-item"
+}
 
-// Set the text content inside the bubble
-div.innerText = answer
+// when host closes the round
+if(payload.new.round_open === false){
 
-// Get width of the container
-const containerWidth = container.offsetWidth
+// hide scenario again
+document.getElementById("scenario-card").style.display = "none"
 
-// Generate a random horizontal position
-// so bubbles appear in different places
-const randomX = Math.random() * (containerWidth - 400)
-
-// Position bubble horizontally
-div.style.left = randomX + "px"
-
-// Start bubble from the bottom
-div.style.bottom = "0px"
-
-// Add bubble to the screen
-container.appendChild(div)
-
-// Remove bubble after animation completes
-setTimeout(()=>{
-div.remove()
-},4000)
+}
 
 }
 )

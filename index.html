@@ -8,30 +8,77 @@
 <title>Marriage Advice Game</title>
 
 <link rel="stylesheet" href="style.css">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 </head>
 
+
 <body>
 
-<div class="container">
+
+<!-- ========================= -->
+<!-- JOIN SCREEN -->
+<!-- ========================= -->
+
+<div id="join-screen" class="container">
 
 <h1 class="title">💍 Marriage Advice Game</h1>
+
+<div class="scenario-box">
+<p>Enter the room to give your best marriage advice!</p>
+</div>
+
+<input id="name" class="input" placeholder="Your name">
+
+<input id="table" class="input" placeholder="Table number">
+
+<input id="roomcode" class="input" placeholder="Room code">
+
+<button class="submit-btn" onclick="joinGame()">Join Game</button>
+
+<p id="join-error"></p>
+
+</div>
+
+
+
+<!-- ========================= -->
+<!-- WAITING ROOM -->
+<!-- ========================= -->
+
+<div id="waiting-screen" style="display:none" class="container">
+
+<h1 class="title">Waiting for host...</h1>
+
+<div class="scenario-box">
+
+<h2 id="player-count">0 / 100 players joined</h2>
+
+<p id="join-timer"></p>
+
+</div>
+
+</div>
+
+
+
+<!-- ========================= -->
+<!-- ANSWER SCREEN -->
+<!-- ========================= -->
+
+<div id="answer-screen" style="display:none" class="container">
+
+<h1 class="title">Give Your Advice</h1>
 
 <div class="scenario-box">
 <p id="scenario">Loading scenario...</p>
 </div>
 
-<input 
-id="name" 
-class="input"
-placeholder="Enter your name"
-/>
-
 <textarea
 id="answer"
 class="input"
-placeholder="Your advice..."
+placeholder="Your marriage advice..."
 maxlength="120"
 ></textarea>
 
@@ -44,6 +91,26 @@ Watch the big screen for results!
 </p>
 
 </div>
+
+
+
+<!-- ========================= -->
+<!-- SUBMITTED SCREEN -->
+<!-- ========================= -->
+
+<div id="submitted-screen" style="display:none" class="container">
+
+<h1 class="title">✅ Advice Submitted!</h1>
+
+<div class="scenario-box">
+
+<p>Watch the big screen for the results!</p>
+
+</div>
+
+</div>
+
+
 
 <script src="app.js"></script>
 

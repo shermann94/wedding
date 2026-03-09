@@ -192,3 +192,32 @@ await client
 document.getElementById("answers").innerHTML=""
 
 }
+
+// ===============================
+// RESET GAME
+// ===============================
+
+async function resetGame(){
+
+// close the round
+await client
+.from("game_state")
+.update({
+round_open:false,
+scenario:"Waiting for round to start..."
+})
+.eq("id",1)
+
+// delete all answers
+await client
+.from("answers")
+.delete()
+.gt("id",0)
+
+// clear answer bubbles on screen
+document.getElementById("answers").innerHTML=""
+
+// reload game state
+loadGame()
+
+}

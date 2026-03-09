@@ -145,8 +145,9 @@ table:'game_state'
 
 if(payload.new.round_open === true){
 
+// only switch if player already joined
+if(localStorage.getItem("joined") === "true"){
 showAnswerScreen()
-
 }
 
 }

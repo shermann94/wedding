@@ -17,16 +17,28 @@ const client = supabase.createClient(
 // from the "game_state" table
 async function loadGame(){
 
-// Query Supabase for the single row of game_state
 const { data } = await client
 .from("game_state")
 .select("*")
 .limit(1)
 .single()
 
-// Display the scenario on the big screen
+// show room code
+document.getElementById("room-code").innerText =
+data.room_code
+
+
+// check if round is already open
+if(data.round_open === true){
+
+document.getElementById("scenario-card").style.display = "block"
+
 document.getElementById("scenario").innerText =
 data.scenario
+
+}
+
+}
 
 // Display the room code for players to join
 const formattedCode =

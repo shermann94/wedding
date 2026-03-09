@@ -156,13 +156,17 @@ document.getElementById("scenario-card").style.display = "none"
 // This unlocks the answer screen on players' phones
 async function startRound(){
 
+const scenario = "If the groom snores loudly every night what should the bride do?"
+
 await client
 .from("game_state")
-.update({ round_open:true })
+.update({
+round_open:true,
+scenario:scenario
+})
 .eq("id",1)
 
 }
-
 
 
 // Close the round

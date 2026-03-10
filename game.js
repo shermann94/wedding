@@ -175,17 +175,30 @@ spawnAnswerBubble(answer)
 
 
 
-// Start the round
-// This unlocks the answer screen on players' phones
 async function startRound(){
 
-const scenario = "If the groom snores loudly every night what should the bride do?"
+// get current round
+const { data: game } = await client
+.from("game_state")
+.select("*")
+.eq("id",1)
+.single()
 
+const round = game.round_number
+
+// get scenario for this round
+const { data: scenarioData } = await client
+.from("scenarios")
+.select("*")
+.eq("round_number", round)
+.single()
+
+// update game state
 await client
 .from("game_state")
 .update({
-round_open:true,
-scenario:scenario
+round_open: true,
+scenario: scenarioData.text
 })
 .eq("id",1)
 
@@ -205,17 +218,37 @@ await client
 
 
 
-// Start the next round
-// Clears answers from the screen
 async function nextRound(){
 
-// Delete all answers from database
+const { data } = await client
+.from("game_state")
+.select("*")
+.eq("id",1)
+.single()
+
+const nextRound = data.round_number + 1
+
+if(nextRound > 3){
+alert("Game finished!")
+return
+}
+
+await client
+.from("game_state")
+.update({
+round_number: nextRound,
+round_open: false,
+scenario: "Waiting for round to start..."
+})
+.eq("id",1)
+
+// clear answers
 await client
 .from("answers")
 .delete()
 .gt("id",0)
 
-// Clear bubbles from the screen
+// clear bubbles
 document.getElementById("answers").innerHTML=""
 
 }
@@ -231,6 +264,7 @@ await client
 .from("game_state")
 .update({
 round_open:false,
+round_number:1,
 scenario:"Waiting for round to start..."
 })
 .eq("id",1)

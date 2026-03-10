@@ -184,42 +184,28 @@ updateAnswerCount()
 
 
 
-async function startRound(){
+async function startGame(){
 
-const { data: game } = await client
-.from("game_state")
-.select("*")
-.eq("id",1)
-.single()
-
-const round = Number(game.round_number)
-
-const { data: scenarioData } = await client
+onst { data: scenarioData } = await client
 .from("scenarios")
 .select("*")
-.eq("round_number", round)
+.eq("round_number", 1)
 .maybeSingle()
-
-console.log("Scenario loaded:", scenarioData)
-
-if(!scenarioData){
-alert("No scenario found for round " + round)
-return
-}
 
 await client
 .from("game_state")
 .update({
+round_number: 1,
 phase: "answering",
 scenario: scenarioData.scenario
 })
 .eq("id",1)
-
 }
 
 
 async function nextRound(){
 
+// get current game state
 const { data } = await client
 .from("game_state")
 .select("*")
@@ -228,16 +214,29 @@ const { data } = await client
 
 const nextRound = data.round_number + 1
 
+// get scenario for next round
+const { data: scenarioData } = await client
+.from("scenarios")
+.select("*")
+.eq("round_number", nextRound)
+.maybeSingle()
+
+if(!scenarioData){
+alert("No more rounds!")
+return
+}
+
+// update game state
 await client
 .from("game_state")
 .update({
-phase: "waiting",
 round_number: nextRound,
-scenario: "Waiting for round to start..."
+phase: "answering",
+scenario: scenarioData.scenario
 })
 .eq("id",1)
 
-// clear answers
+// clear previous answers
 await client
 .from("answers")
 .delete()
@@ -245,6 +244,20 @@ await client
 
 // clear bubbles
 document.getElementById("answers").innerHTML=""
+
+}
+// ===============================
+// use AI later
+// ===============================
+async function evaluateAnswers(){
+
+// move game to judging phase
+await client
+.from("game_state")
+.update({
+phase: "judging"
+})
+.eq("id",1)
 
 }
 

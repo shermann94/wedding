@@ -182,23 +182,20 @@ updateAnswerCount()
 
 async function startRound(){
 
-// get current round
 const { data: game } = await client
 .from("game_state")
 .select("*")
 .eq("id",1)
 .single()
 
-const round = game.round_number
+const round = game.round_number || 1
 
-// get scenario for this round
 const { data: scenarioData } = await client
 .from("scenarios")
 .select("*")
 .eq("round_number", round)
 .single()
 
-// start answering phase
 await client
 .from("game_state")
 .update({

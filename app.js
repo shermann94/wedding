@@ -98,7 +98,7 @@ document.getElementById("player-table-display").innerText =
 " — Table " + tableNo
 
 // hide join section
-document.getElementById("join-section").style.display = "none"
+document.getElementById("join-screen").style.display = "none"
 
 // show waiting screen
 showWaiting()

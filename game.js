@@ -9,9 +9,6 @@ const client = supabase.createClient(
   supabaseUrl,
   supabaseKey
 )
-// ===============================
-// LOAD GAME DATA
-// ===============================
 
 // ===============================
 // LOAD GAME DATA
@@ -189,6 +186,7 @@ updateAnswerCount()
 
 async function startRound(){
 
+// get current round
 const { data: game } = await client
 .from("game_state")
 .select("*")
@@ -197,24 +195,38 @@ const { data: game } = await client
 
 const round = Number(game.round_number)
 
-const { data: scenarioData } = await client
+// get scenario for this round
+const { data: scenarioData, error } = await client
 .from("scenarios")
 .select("*")
 .eq("round_number", round)
 .maybeSingle()
+
+if(error){
+console.error(error)
+return
+}
 
 if(!scenarioData){
 alert("No scenario found for round " + round)
 return
 }
 
-await client
+console.log("Scenario loaded:", scenarioData)
+
+// update game state
+const { error: updateError } = await client
 .from("game_state")
 .update({
 phase: "answering",
-scenario: scenarioData.text
+scenario: scenarioData.text   // <-- change if column name different
 })
 .eq("id",1)
+
+if(updateError){
+console.error(updateError)
+return
+}
 
 }
 

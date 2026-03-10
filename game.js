@@ -309,7 +309,6 @@ bubble.remove()
 // ===============================
 // UPDATE ANSWER COUNT
 // ===============================
-
 async function updateAnswerCount(){
 
 // get current round
@@ -332,8 +331,12 @@ const { count: answerCount } = await client
 .select("*",{ count:'exact', head:true })
 .eq("round_number", round)
 
+// prevent null display
+const players = playerCount ?? 0
+const answers = answerCount ?? 0
+
 document.getElementById("answer-count").innerText =
-answerCount + " / " + playerCount + " answers received"
+answers + " / " + players + " answers received"
 
 }
 

@@ -204,9 +204,11 @@ data.scenario
 
 async function submitAdvice(){
 
+// get the text the player typed
+const answer = document.getElementById("answer").value
+
 const playerName = localStorage.getItem("playerName")
 
-// get current round
 const { data: game } = await client
 .from("game_state")
 .select("round_number")
@@ -215,7 +217,8 @@ const { data: game } = await client
 
 const round = game.round_number
 
-await client
+// insert answer
+const { error } = await client
 .from("answers")
 .insert([{
 name: playerName,
@@ -223,19 +226,13 @@ answer: answer,
 round_number: round
 }])
 
-// show error if something failed
 if(error){
-console.error("Submit error:", error)
-alert("Something went wrong submitting your advice.")
+console.error(error)
+alert("You already submitted this round!")
 return
 }
 
-// mark as submitted
-localStorage.setItem("submitted","true")
-
-// switch screens
-document.getElementById("answer-screen").style.display="none"
-document.getElementById("submitted-screen").style.display="block"
+document.getElementById("answer").value = ""
 
 }
 

@@ -157,7 +157,15 @@ console.log("Answer received:", payload)
 
 const answer = payload.new.answer
 
+const { data: game } = await client
+.from("game_state")
+.select("round_number")
+.eq("id",1)
+.single()
+
+if(payload.new.round_number === game.round_number){
 spawnAnswerBubble(answer)
+}
 
 }
 )
@@ -292,5 +300,36 @@ document.getElementById("answers").appendChild(bubble)
 setTimeout(()=>{
 bubble.remove()
 },4000)
+
+}
+
+// ===============================
+// UPDATE ANSWER COUNT
+// ===============================
+
+async function updateAnswerCount(){
+
+// get current round
+const { data: game } = await client
+.from("game_state")
+.select("round_number")
+.eq("id",1)
+.single()
+
+const round = game.round_number
+
+// count players
+const { count: playerCount } = await client
+.from("players")
+.select("*",{ count:'exact', head:true })
+
+// count answers for this round
+const { count: answerCount } = await client
+.from("answers")
+.select("*",{ count:'exact', head:true })
+.eq("round_number", round)
+
+document.getElementById("answer-count").innerText =
+answerCount + " / " + playerCount + " answers received"
 
 }

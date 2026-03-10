@@ -186,7 +186,6 @@ updateAnswerCount()
 
 async function startRound(){
 
-// get current round
 const { data: game } = await client
 .from("game_state")
 .select("*")
@@ -195,38 +194,26 @@ const { data: game } = await client
 
 const round = Number(game.round_number)
 
-// get scenario for this round
-const { data: scenarioData, error } = await client
+const { data: scenarioData } = await client
 .from("scenarios")
 .select("*")
 .eq("round_number", round)
 .maybeSingle()
 
-if(error){
-console.error(error)
-return
-}
+console.log("Scenario data:", scenarioData)
 
 if(!scenarioData){
 alert("No scenario found for round " + round)
 return
 }
 
-console.log("Scenario loaded:", scenarioData)
-
-// update game state
-const { error: updateError } = await client
+await client
 .from("game_state")
 .update({
 phase: "answering",
-scenario: scenarioData.text   // <-- change if column name different
+scenario: scenarioData.text
 })
 .eq("id",1)
-
-if(updateError){
-console.error(updateError)
-return
-}
 
 }
 

@@ -13,42 +13,48 @@ const client = supabase.createClient(
 // LOAD GAME DATA
 // ===============================
 
-// This function loads the current game settings
-// from the "game_state" table
 async function loadGame(){
 
-  // Get game state from Supabase
-  const { data, error } = await client
-    .from("game_state")
-    .select("*")
-    .limit(1)
-    .single()
+// get current game state
+const { data, error } = await client
+.from("game_state")
+.select("*")
+.eq("id",1)
+.single()
 
-  if(error){
-    console.error(error)
-    return
-  }
+if(error){
+console.error(error)
+return
+}
 
-  // Format room code (LOVE2026 → LOVE-2026)
-  const formattedCode =
-    data.room_code.slice(0,4) + "-" + data.room_code.slice(4)
+// format room code (LOVE2026 → LOVE-2026)
+const formattedCode =
+data.room_code.slice(0,4) + "-" + data.room_code.slice(4)
 
-  // Display room code
-  document.getElementById("room-code").innerText =
-    formattedCode
+// show room code
+document.getElementById("room-code").innerText =
+formattedCode
 
-  // Update how many players joined
-  updatePlayerCount()
 
-  updateAnswerCount()
-  // If round already started (important for refresh)
-  if(data.phase === "answering"){
+// update counters
+updatePlayerCount()
+updateAnswerCount()
 
+
+// control scenario visibility
+if(data.phase === "answering"){
+
+// show scenario card
 document.getElementById("scenario-card").style.display = "block"
-document.getElementById("scenario").innerText = data.scenario
 
-} else {
+// display scenario text
+document.getElementById("scenario").innerText =
+data.scenario
 
+}
+else{
+
+// hide scenario card
 document.getElementById("scenario-card").style.display = "none"
 
 }

@@ -200,7 +200,7 @@ const { data: scenarioData } = await client
 .eq("round_number", round)
 .maybeSingle()
 
-console.log("Scenario data:", scenarioData)
+console.log("Scenario loaded:", scenarioData)
 
 if(!scenarioData){
 alert("No scenario found for round " + round)
@@ -211,23 +211,11 @@ await client
 .from("game_state")
 .update({
 phase: "answering",
-scenario: scenarioData.text
+scenario: scenarioData.scenario
 })
 .eq("id",1)
 
 }
-
-async function closeRound(){
-
-await client
-.from("game_state")
-.update({
-phase: "judging"
-})
-.eq("id",1)
-
-}
-
 
 
 async function nextRound(){

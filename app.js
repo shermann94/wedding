@@ -18,7 +18,20 @@ window.onload = async function(){
 if(localStorage.getItem("joined") === "true"){
 
 showWaiting()
+const playerName = localStorage.getItem("playerName")
+const tableNo = localStorage.getItem("tableNo")
 
+if(playerName && tableNo){
+
+document.getElementById("player-info").style.display = "block"
+
+document.getElementById("player-name-display").innerText =
+"👤 " + playerName
+
+document.getElementById("player-table-display").innerText =
+" — Table " + tableNo
+
+}
 // check if round already started
 const { data } = await client
 .from("game_state")

@@ -149,7 +149,10 @@ table:'game_state'
 },
 (payload) => {
 
-if(payload.new.phase === "answering"){
+if(
+localStorage.getItem("joined") === "true" &&
+payload.new.phase === "answering"
+){
 showAnswerScreen()
 }
 

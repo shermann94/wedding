@@ -26,10 +26,8 @@ const { data } = await client
 .limit(1)
 .single()
 
-if(data.round_open === true){
-
+if(payload.new.phase === "answering"){
 showAnswerScreen()
-
 }
 
 }

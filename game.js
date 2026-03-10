@@ -114,28 +114,22 @@ client
 .on(
 'postgres_changes',
 {
-event:'UPDATE',      // Trigger when a new answer is inserted
+event:'UPDATE',
 schema:'public',
 table:'game_state'
 },
 (payload) => {
 
-// when host starts the round
-if(payload.new.round_open === true){
+if(payload.new.phase === "answering"){
 
-// show the scenario card
 document.getElementById("scenario-card").style.display = "block"
-
-// load the scenario text
 document.getElementById("scenario").innerText =
 payload.new.scenario
 
 }
 
-// when host closes the round
-if(payload.new.round_open === false){
+if(payload.new.phase === "waiting"){
 
-// hide scenario again
 document.getElementById("scenario-card").style.display = "none"
 
 }
@@ -193,25 +187,24 @@ const { data: scenarioData } = await client
 .eq("round_number", round)
 .single()
 
-// update game state
+// start answering phase
 await client
 .from("game_state")
 .update({
-round_open: true,
+phase: "answering",
 scenario: scenarioData.text
 })
 .eq("id",1)
 
 }
 
-
-// Close the round
-// This stops new submissions
 async function closeRound(){
 
 await client
 .from("game_state")
-.update({ round_open:false })
+.update({
+phase: "judging"
+})
 .eq("id",1)
 
 }
@@ -228,16 +221,11 @@ const { data } = await client
 
 const nextRound = data.round_number + 1
 
-if(nextRound > 3){
-alert("Game finished!")
-return
-}
-
 await client
 .from("game_state")
 .update({
+phase: "waiting",
 round_number: nextRound,
-round_open: false,
 scenario: "Waiting for round to start..."
 })
 .eq("id",1)

@@ -533,3 +533,13 @@ box-shadow:0 6px 14px rgba(0,0,0,0.1);
 background:#ffa3b1;
 
 }
+
+/* Player Details */
+.player-info{
+background:#ffffff;
+padding:10px 20px;
+border-radius:12px;
+margin-bottom:15px;
+font-weight:600;
+display:inline-block;
+}

@@ -153,7 +153,6 @@ schema:'public',
 table:'answers'
 },
 (payload)=>{
-console.log("Answer received:", payload)
 
 const answer = payload.new.answer
 
@@ -165,6 +164,9 @@ const { data: game } = await client
 
 if(payload.new.round_number === game.round_number){
 spawnAnswerBubble(answer)
+
+updateAnswerCount()
+
 }
 
 }

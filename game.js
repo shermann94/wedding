@@ -188,13 +188,13 @@ const { data: game } = await client
 .eq("id",1)
 .single()
 
-const round = game.round_number
+const round = Number(game.round_number)
 
 const { data: scenarioData } = await client
 .from("scenarios")
 .select("*")
 .eq("round_number", round)
-.single()
+.maybeSingle()
 
 if(!scenarioData){
 alert("No scenario found for round " + round)
@@ -205,7 +205,7 @@ await client
 .from("game_state")
 .update({
 phase: "answering",
-scenario: scenarioData.scenario
+scenario: scenarioData.text
 })
 .eq("id",1)
 

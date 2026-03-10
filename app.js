@@ -204,11 +204,12 @@ data.scenario
 
 async function submitAdvice(){
 
-// get the text the player typed
+// get player input
 const answer = document.getElementById("answer").value
 
 const playerName = localStorage.getItem("playerName")
 
+// get current round
 const { data: game } = await client
 .from("game_state")
 .select("round_number")
@@ -232,6 +233,7 @@ alert("You already submitted this round!")
 return
 }
 
+// clear input
 document.getElementById("answer").value = ""
 
 }

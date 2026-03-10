@@ -13,6 +13,10 @@ const client = supabase.createClient(
 // LOAD GAME DATA
 // ===============================
 
+// ===============================
+// LOAD GAME DATA
+// ===============================
+
 async function loadGame(){
 
 // get current game state
@@ -27,7 +31,7 @@ console.error(error)
 return
 }
 
-// format room code (LOVE2026 → LOVE-2026)
+// format room code
 const formattedCode =
 data.room_code.slice(0,4) + "-" + data.room_code.slice(4)
 
@@ -36,7 +40,7 @@ document.getElementById("room-code").innerText =
 formattedCode
 
 
-// update counters
+// update player + answer counters
 updatePlayerCount()
 updateAnswerCount()
 
@@ -44,17 +48,14 @@ updateAnswerCount()
 // control scenario visibility
 if(data.phase === "answering"){
 
-// show scenario card
 document.getElementById("scenario-card").style.display = "block"
 
-// display scenario text
 document.getElementById("scenario").innerText =
 data.scenario
 
 }
 else{
 
-// hide scenario card
 document.getElementById("scenario-card").style.display = "none"
 
 }

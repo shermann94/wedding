@@ -38,87 +38,56 @@ showAnswerScreen()
 // JOIN GAME
 // ======================
 
+// ===============================
+// JOIN GAME
+// ===============================
 async function joinGame(){
 
-// get user inputs
-const name = document.getElementById("name").value
-const table = document.getElementById("table").value
-const code = document.getElementById("roomcode").value
-.trim()
-.replace(/\s/g,'')
-.toUpperCase()
+// get values from input fields
+const playerName = document.getElementById("name").value
+const tableNo = document.getElementById("table").value
+const roomCode = document.getElementById("room").value
 
-// validate fields
-if(!name || !table || !code){
-
-document.getElementById("join-error").innerText =
-"Please fill in all fields"
-
+// basic validation
+if(!playerName || !tableNo || !roomCode){
+alert("Please fill in your name, table number and room code")
 return
-
-}
-
-// get game settings from Supabase
-const { data: room, error } = await client
-.from("game_state")
-.select("*")
-.limit(1)
-.single()
-
-if(error){
-console.error(error)
-return
-}
-
-const roomCode = room.room_code
-const maxPlayers = room.max_players
-
-// check room code
-if(code !== roomCode){
-
-document.getElementById("join-error").innerText =
-"Wrong room code"
-
-return
-
-}
-
-// check player count
-const { count } = await client
-.from("players")
-.select("*",{ count:'exact', head:true })
-.eq("room_code", roomCode)
-
-if(count >= maxPlayers){
-
-document.getElementById("join-error").innerText =
-"Room is full"
-
-return
-
 }
 
 // insert player into database
-const { error: insertError } = await client
+const { error } = await client
 .from("players")
 .insert([{
-name: name,
-table_no: table,
+name: playerName,
+table_no: tableNo,
 room_code: roomCode
 }])
 
-if(insertError){
-console.error(insertError)
+if(error){
+console.error(error)
+alert("Unable to join game")
 return
 }
 
 // save player info locally
-localStorage.setItem("joined","true")
-localStorage.setItem("playerName", name)
-localStorage.setItem("tableNo", table)
+localStorage.setItem("playerName", playerName)
+localStorage.setItem("tableNo", tableNo)
 localStorage.setItem("roomCode", roomCode)
+localStorage.setItem("joined","true")
 
-// move to waiting screen
+// show player identity container
+document.getElementById("player-info").style.display = "block"
+
+document.getElementById("player-name-display").innerText =
+"👤 " + playerName
+
+document.getElementById("player-table-display").innerText =
+" — Table " + tableNo
+
+// hide join section
+document.getElementById("join-section").style.display = "none"
+
+// show waiting screen
 showWaiting()
 
 }

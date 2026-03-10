@@ -26,7 +26,7 @@ const { data } = await client
 .limit(1)
 .single()
 
-if(payload.new.phase === "answering"){
+if(data.phase === "answering"){
 showAnswerScreen()
 }
 

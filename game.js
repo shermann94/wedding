@@ -44,14 +44,14 @@ async function loadGame(){
   // If round already started (important for refresh)
   if(data.phase === "answering"){
 
-    // show scenario card
-    document.getElementById("scenario-card").style.display = "block"
+document.getElementById("scenario-card").style.display = "block"
+document.getElementById("scenario").innerText = data.scenario
 
-    // show scenario text
-    document.getElementById("scenario").innerText =
-      data.scenario
+} else {
 
-  }
+document.getElementById("scenario-card").style.display = "none"
+
+}
 
 }
 

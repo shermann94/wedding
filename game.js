@@ -42,7 +42,7 @@ async function loadGame(){
 
   updateAnswerCount()
   // If round already started (important for refresh)
-  if(data.round_open === true){
+  if(data.phase === "answering"){
 
     // show scenario card
     document.getElementById("scenario-card").style.display = "block"
@@ -262,7 +262,7 @@ async function resetGame(){
 await client
 .from("game_state")
 .update({
-round_open:false,
+phase:"waiting",
 round_number:1,
 scenario:"Waiting for round to start..."
 })
@@ -272,8 +272,8 @@ scenario:"Waiting for round to start..."
 await client
 .from("answers")
 .delete()
-.gt("id",0)
-
+.eq("round_number", data.round_number)
+  
 // clear answer bubbles on screen
 document.getElementById("answers").innerHTML=""
 

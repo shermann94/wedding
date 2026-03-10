@@ -311,12 +311,21 @@ bubble.remove()
 // ===============================
 async function updateAnswerCount(){
 
-// get current round
+// get game state
 const { data: game } = await client
 .from("game_state")
-.select("round_number")
+.select("round_number, phase")
 .eq("id",1)
 .single()
+
+// hide counter if waiting
+if(game.phase === "waiting"){
+document.getElementById("answer-count").style.display = "none"
+return
+}
+
+// show counter otherwise
+document.getElementById("answer-count").style.display = "block"
 
 const round = game.round_number
 
@@ -325,13 +334,12 @@ const { count: playerCount } = await client
 .from("players")
 .select("*",{ count:'exact', head:true })
 
-// count answers for this round
+// count answers
 const { count: answerCount } = await client
 .from("answers")
 .select("*",{ count:'exact', head:true })
 .eq("round_number", round)
 
-// prevent null display
 const players = playerCount ?? 0
 const answers = answerCount ?? 0
 
@@ -339,5 +347,4 @@ document.getElementById("answer-count").innerText =
 answers + " / " + players + " answers received"
 
 }
-
 

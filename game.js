@@ -40,6 +40,7 @@ async function loadGame(){
   // Update how many players joined
   updatePlayerCount()
 
+  updateAnswerCount()
   // If round already started (important for refresh)
   if(data.round_open === true){
 

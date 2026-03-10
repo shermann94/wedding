@@ -260,7 +260,6 @@ document.getElementById("answers").innerHTML=""
 
 async function resetGame(){
 
-// close the round
 await client
 .from("game_state")
 .update({
@@ -274,12 +273,12 @@ scenario:"Waiting for round to start..."
 await client
 .from("answers")
 .delete()
-.eq("round_number", data.round_number)
-  
-// clear answer bubbles on screen
+.gt("id",0)
+
+// clear bubbles
 document.getElementById("answers").innerHTML=""
 
-// reload game state
+// reload state
 loadGame()
 
 }

@@ -59,7 +59,7 @@ async function joinGame(){
 // get values from input fields
 const playerName = document.getElementById("name").value
 const tableNo = document.getElementById("table").value
-const roomCode = document.getElementById("room").value
+const roomCode = document.getElementById("roomcode").value
 
 // basic validation
 if(!playerName || !tableNo || !roomCode){

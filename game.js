@@ -188,13 +188,22 @@ const { data: game } = await client
 .eq("id",1)
 .single()
 
-const round = game.round_number || 1
+console.log("Current round:", game.round_number)
 
-const { data: scenarioData } = await client
+const round = game.round_number
+
+const { data: scenarioData, error } = await client
 .from("scenarios")
 .select("*")
 .eq("round_number", round)
 .single()
+
+console.log("Scenario data:", scenarioData, error)
+
+if(!scenarioData){
+alert("No scenario found for round " + round)
+return
+}
 
 await client
 .from("game_state")

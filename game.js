@@ -152,7 +152,7 @@ event:'INSERT',
 schema:'public',
 table:'answers'
 },
-(payload)=>{
+async (payload)=>{
 
 const answer = payload.new.answer
 

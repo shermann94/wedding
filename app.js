@@ -206,28 +206,23 @@ data.scenario
 
 async function submitAdvice(){
 
-// prevent duplicate submissions
-if(localStorage.getItem("submitted") === "true"){
-alert("You already submitted!")
-return
-}
-
-// get answer text
-const answer = document.getElementById("answer").value
-
-if(!answer){
-return
-}
-
-// get player name from local storage
 const playerName = localStorage.getItem("playerName")
 
-// insert into Supabase
-const { error } = await client
+// get current round
+const { data: game } = await client
+.from("game_state")
+.select("round_number")
+.eq("id",1)
+.single()
+
+const round = game.round_number
+
+await client
 .from("answers")
 .insert([{
 name: playerName,
-answer: answer
+answer: answer,
+round_number: round
 }])
 
 // show error if something failed

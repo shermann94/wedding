@@ -141,24 +141,19 @@ document.getElementById("waiting-screen").style.display="block"
 client
 .channel('game_state_updates')
 .on(
-  'postgres_changes',
-  {
-    event: 'UPDATE',
-    schema: 'public',
-    table: 'game_state'
-  },
-  (payload) => {
+'postgres_changes',
+{
+event:'UPDATE',
+schema:'public',
+table:'game_state'
+},
+(payload) => {
 
-    // only switch screens if player already joined
-    if(payload.new.round_open === true){
+if(payload.new.phase === "answering"){
+showAnswerScreen()
+}
 
-      if(localStorage.getItem("joined") === "true"){
-        showAnswerScreen()
-      }
-
-    }
-
-  }
+}
 )
 .subscribe()
 

@@ -186,7 +186,7 @@ updateAnswerCount()
 
 async function startGame(){
 
-onst { data: scenarioData } = await client
+const { data: scenarioData } = await client
 .from("scenarios")
 .select("*")
 .eq("round_number", 1)

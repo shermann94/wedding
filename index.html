@@ -1,122 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
+    <title>Marriage Advice Game</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css" />
 
-<title>Marriage Advice Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  </head>
 
-<link rel="stylesheet" href="style.css">
+  <body>
+    <!-- ========================= -->
+    <!-- JOIN SCREEN -->
+    <!-- ========================= -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <div id="join-screen" class="container">
+      <h1 class="title">💍 Marriage Advice Game</h1>
 
-</head>
+      <div class="scenario-box">
+        <p>Enter the room to give your best marriage advice!</p>
+      </div>
 
+      <input id="name" class="input" placeholder="Your name" />
 
-<body>
+      <input id="table" class="input" placeholder="Table number" />
 
+      <input
+        id="roomcode"
+        class="input"
+        placeholder="Room code"
+        style="text-transform: uppercase"
+      />
 
-<!-- ========================= -->
-<!-- JOIN SCREEN -->
-<!-- ========================= -->
+      <button class="submit-btn" onclick="joinGame()">Join Game</button>
 
-<div id="join-screen" class="container">
+      <p id="join-error"></p>
+    </div>
 
-<h1 class="title">💍 Marriage Advice Game</h1>
+    <!-- ========================= -->
+    <!-- WAITING ROOM -->
+    <!-- ========================= -->
 
-<div class="scenario-box">
-<p>Enter the room to give your best marriage advice!</p>
-</div>
+    <div id="waiting-screen" style="display: none" class="container">
+      <h1 class="title">Waiting for host to start...</h1>
 
-<input id="name" class="input" placeholder="Your name">
+      <div class="scenario-box">
+        <p>Please look at the big screen.</p>
+      </div>
+    </div>
 
-<input id="table" class="input" placeholder="Table number">
+    <!-- ========================= -->
+    <!-- ANSWER SCREEN -->
+    <!-- ========================= -->
 
-<input id="roomcode" class="input" placeholder="Room code" style="text-transform:uppercase">
+    <div id="answer-screen" style="display: none" class="container">
+      <div id="player-info" class="player-info" style="display: none">
+        <span id="player-name-display"></span>
+        <span id="player-table-display"></span>
+      </div>
 
-<button class="submit-btn" onclick="joinGame()">Join Game</button>
+      <h1 class="title">Give Your Advice</h1>
 
-<p id="join-error"></p>
+      <div class="scenario-box">
+        <p id="scenario">Loading scenario...</p>
+      </div>
 
-</div>
+      <textarea
+        id="answer"
+        class="input"
+        placeholder="Your marriage advice..."
+        maxlength="120"
+      ></textarea>
 
+      <button onclick="submitAdvice()" class="submit-btn">Submit Advice</button>
 
+      <p class="hint">Watch the big screen for results!</p>
+    </div>
 
-<!-- ========================= -->
-<!-- WAITING ROOM -->
-<!-- ========================= -->
+    <!-- ========================= -->
+    <!-- SUBMITTED SCREEN -->
+    <!-- ========================= -->
 
-<div id="waiting-screen" style="display:none" class="container">
+    <div id="submitted-screen" style="display: none" class="container">
+      <h1 class="title">✅ Advice Submitted!</h1>
 
-<h1 class="title">Waiting for host to start...</h1>
+      <div class="scenario-box">
+        <p>Watch the big screen for the results!</p>
+      </div>
+    </div>
 
-<div class="scenario-box">
-
-<p>Please look at the big screen.</p>
-
-</div>
-
-</div>
-
-
-
-<!-- ========================= -->
-<!-- ANSWER SCREEN -->
-<!-- ========================= -->
-
-<div id="answer-screen" style="display:none" class="container">
-  
-<div id="player-info" class="player-info" style="display:none;">
-  <span id="player-name-display"></span>
-  <span id="player-table-display"></span>
-</div>
-  
-<h1 class="title">Give Your Advice</h1>
-
-<div class="scenario-box">
-<p id="scenario">Loading scenario...</p>
-</div>
-
-<textarea
-id="answer"
-class="input"
-placeholder="Your marriage advice..."
-maxlength="120"
-></textarea>
-
-<button onclick="submitAdvice()" class="submit-btn">
-Submit Advice
-</button>
-
-<p class="hint">
-Watch the big screen for results!
-</p>
-
-</div>
-
-
-
-<!-- ========================= -->
-<!-- SUBMITTED SCREEN -->
-<!-- ========================= -->
-
-<div id="submitted-screen" style="display:none" class="container">
-
-<h1 class="title">✅ Advice Submitted!</h1>
-
-<div class="scenario-box">
-
-<p>Watch the big screen for the results!</p>
-
-</div>
-
-</div>
-
-
-
-<script src="app.js"></script>
-
-</body>
-
+    <script src="app.js"></script>
+  </body>
 </html>

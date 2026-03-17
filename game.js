@@ -285,7 +285,22 @@ async function evaluateAnswers() {
 
   const winnerIndex = result.winner_index;
   const winner = answers[winnerIndex];
+  // get player's table number
+const { data: player } = await client
+  .from("players")
+  .select("table_no")
+  .eq("name", winner.name)
+  .single();
 
+// save winner to database
+await client.from("winners").insert([
+  {
+    round_number: round,
+    player_name: winner.name,
+    table_no: player.table_no,
+    answer: winner.answer
+  }
+]);
   // show winner card
   document.getElementById("winner-card").style.display = "block";
 

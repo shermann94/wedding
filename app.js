@@ -1,121 +1,165 @@
 const supabaseUrl = "https://dmztipmhrwxdjnogznvi.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU";
-
 const client = supabase.createClient(supabaseUrl, supabaseKey);
-
-let roomCode = "LOVE-2026";
-let maxPlayers = 100;
 
 // ======================
 // AUTO REJOIN IF REFRESH
 // ======================
 
 window.onload = async function () {
-  if (localStorage.getItem("joined") === "true") {
-    showWaiting();
+  try {
+    if (localStorage.getItem("joined") === "true") {
+      const playerName = localStorage.getItem("playerName");
+      const tableNo = localStorage.getItem("tableNo");
 
-    const playerName = localStorage.getItem("playerName");
-    const tableNo = localStorage.getItem("tableNo");
+      if (playerName && tableNo) {
+        document.getElementById("player-info").style.display = "block";
+        document.getElementById("player-name-display").innerText =
+          "👤 " + playerName;
+        document.getElementById("player-table-display").innerText =
+          " — Table " + tableNo;
+      }
 
-    if (playerName && tableNo) {
-      document.getElementById("player-info").style.display = "block";
+      const { data, error } = await client
+        .from("game_state")
+        .select("*")
+        .eq("id", 1)
+        .single();
 
-      document.getElementById("player-name-display").innerText =
-        "👤 " + playerName;
+      if (error || !data) {
+        console.error("Failed to load game state on refresh:", error);
+        showWaiting();
+        return;
+      }
 
-      document.getElementById("player-table-display").innerText =
-        " — Table " + tableNo;
+      if (data.phase === "answering") {
+        showAnswerScreen();
+      } else if (data.phase === "waiting") {
+        showWaiting();
+      } else {
+        showSubmittedScreen();
+      }
     }
-
-    const { data } = await client
-      .from("game_state")
-      .select("*")
-      .limit(1)
-      .single();
-
-    if (data.phase === "answering") {
-      showAnswerScreen();
-    }
+  } catch (err) {
+    console.error("Window load error:", err);
   }
 };
 
 // ===============================
 // JOIN GAME
 // ===============================
+
 async function joinGame() {
-  // check if game already started
-  const { data: game } = await client
-    .from("game_state")
-    .select("phase")
-    .eq("id", 1)
-    .single();
+  document.getElementById("join-error").innerText = "";
 
-  if (game.phase !== "waiting") {
-    document.getElementById("join-error").innerText =
-      "❌ The game has already started.";
-    return;
+  try {
+    const { data: game, error: gameError } = await client
+      .from("game_state")
+      .select("phase, room_code")
+      .eq("id", 1)
+      .single();
+
+    if (gameError || !game) {
+      console.error("Failed to load game state:", gameError);
+      alert("Failed to load game settings.");
+      return;
+    }
+
+    if (game.phase !== "waiting") {
+      document.getElementById("join-error").innerText =
+        "❌ The game has already started.";
+      return;
+    }
+
+    const playerName = document.getElementById("name").value.trim();
+    const tableNo = document.getElementById("table").value.trim();
+    const enteredRoomCode = document
+      .getElementById("roomcode")
+      .value.trim()
+      .toUpperCase();
+
+    if (!playerName || !tableNo || !enteredRoomCode) {
+      alert("Please fill in your name, table number and room code.");
+      return;
+    }
+
+    const rawRoomCode = game.room_code.toUpperCase();
+    const formattedRoomCode =
+      rawRoomCode.slice(0, 4) + "-" + rawRoomCode.slice(4);
+
+    if (
+      enteredRoomCode !== rawRoomCode &&
+      enteredRoomCode !== formattedRoomCode
+    ) {
+      document.getElementById("join-error").innerText = "❌ Wrong room code.";
+      return;
+    }
+
+    const tableNumber = Number(tableNo);
+
+    if (!Number.isInteger(tableNumber) || tableNumber < 1 || tableNumber > 23) {
+      alert("Please enter a valid table number.");
+      return;
+    }
+
+    const { error } = await client.from("players").insert([
+      {
+        name: playerName,
+        table_no: tableNumber,
+        room_code: rawRoomCode,
+      },
+    ]);
+
+    if (error) {
+      console.error("Join error:", error);
+      alert("Unable to join game: " + error.message);
+      return;
+    }
+
+    localStorage.setItem("playerName", playerName);
+    localStorage.setItem("tableNo", String(tableNumber));
+    localStorage.setItem("roomCode", rawRoomCode);
+    localStorage.setItem("joined", "true");
+    localStorage.removeItem("submitted");
+
+    document.getElementById("player-info").style.display = "block";
+    document.getElementById("player-name-display").innerText =
+      "👤 " + playerName;
+    document.getElementById("player-table-display").innerText =
+      " — Table " + tableNumber;
+
+    showWaiting();
+  } catch (err) {
+    console.error("Unexpected join error:", err);
+    alert("Something went wrong while joining.");
   }
-
-  // get values
-  const playerName = document.getElementById("name").value;
-  const tableNo = document.getElementById("table").value;
-  const roomCode = document
-    .getElementById("roomcode")
-    .value.toUpperCase();
-
-  if (!playerName || !tableNo || !roomCode) {
-    alert("Please fill in your name, table number and room code");
-    return;
-  }
-
-  const { error } = await client.from("players").insert([
-    {
-      name: playerName,
-      table_no: tableNo,
-      room_code: roomCode,
-    },
-  ]);
-
-  if (error) {
-    console.error(error);
-    alert("Unable to join game");
-    return;
-  }
-
-  localStorage.setItem("playerName", playerName);
-  localStorage.setItem("tableNo", tableNo);
-  localStorage.setItem("roomCode", roomCode);
-  localStorage.setItem("joined", "true");
-
-  document.getElementById("player-info").style.display = "block";
-
-  document.getElementById("player-name-display").innerText =
-    "👤 " + playerName;
-
-  document.getElementById("player-table-display").innerText =
-    " — Table " + tableNo;
-
-  document.getElementById("join-screen").style.display = "none";
-
-  showWaiting();
 }
 
 // ======================
-// SHOW WAITING SCREEN
+// SHOW SCREENS
 // ======================
 
 function showWaiting() {
   document.getElementById("join-screen").style.display = "none";
+  document.getElementById("answer-screen").style.display = "none";
+  document.getElementById("submitted-screen").style.display = "none";
   document.getElementById("waiting-screen").style.display = "block";
 }
 
+function showSubmittedScreen() {
+  document.getElementById("join-screen").style.display = "none";
+  document.getElementById("waiting-screen").style.display = "none";
+  document.getElementById("answer-screen").style.display = "none";
+  document.getElementById("submitted-screen").style.display = "block";
+}
+
 // ==================================
-// LISTEN FOR ROUND START
+// LISTEN FOR GAME STATE CHANGES
 // ==================================
 
 client
-  .channel("game_state_updates")
+  .channel("player_game_state_updates")
   .on(
     "postgres_changes",
     {
@@ -126,22 +170,23 @@ client
     (payload) => {
       const phase = payload.new.phase;
 
-      // reset game
       if (phase === "waiting") {
         localStorage.clear();
         location.reload();
         return;
       }
 
-      // round starts
-      if (
-        localStorage.getItem("joined") === "true" &&
-        phase === "answering"
-      ) {
+      if (localStorage.getItem("joined") !== "true") {
+        return;
+      }
+
+      if (phase === "answering") {
         localStorage.removeItem("submitted");
         showAnswerScreen();
+      } else if (phase === "judging" || phase === "results") {
+        showSubmittedScreen();
       }
-    }
+    },
   )
   .subscribe();
 
@@ -154,23 +199,32 @@ async function showAnswerScreen() {
   document.getElementById("waiting-screen").style.display = "none";
   document.getElementById("submitted-screen").style.display = "none";
 
-  document.getElementById("answer").value = "";
-
   if (localStorage.getItem("submitted") === "true") {
-    document.getElementById("answer-screen").style.display = "none";
-    document.getElementById("submitted-screen").style.display = "block";
+    showSubmittedScreen();
     return;
   }
 
   document.getElementById("answer-screen").style.display = "block";
+  document.getElementById("answer").value = "";
 
-  const { data } = await client
-    .from("game_state")
-    .select("*")
-    .limit(1)
-    .single();
+  try {
+    const { data, error } = await client
+      .from("game_state")
+      .select("scenario")
+      .eq("id", 1)
+      .single();
 
-  document.getElementById("scenario").innerText = data.scenario;
+    if (error || !data) {
+      console.error("Failed to load scenario:", error);
+      document.getElementById("scenario").innerText =
+        "Failed to load scenario.";
+      return;
+    }
+
+    document.getElementById("scenario").innerText = data.scenario;
+  } catch (err) {
+    console.error("Show answer screen error:", err);
+  }
 }
 
 // ======================
@@ -178,49 +232,68 @@ async function showAnswerScreen() {
 // ======================
 
 async function submitAdvice() {
-  const answer = document.getElementById("answer").value.trim();
-  const playerName = localStorage.getItem("playerName");
+  try {
+    const answer = document.getElementById("answer").value.trim();
+    const playerName = localStorage.getItem("playerName");
 
-  if (!answer) {
-    alert("Please enter your advice");
-    return;
+    if (!answer) {
+      alert("Please enter your advice.");
+      return;
+    }
+
+    if (!playerName) {
+      alert("Player info missing. Please rejoin the game.");
+      return;
+    }
+
+    if (containsBannedWords(answer)) {
+      alert("Please keep your advice respectful.");
+      return;
+    }
+
+    const { data: game, error: gameError } = await client
+      .from("game_state")
+      .select("round_number, phase")
+      .eq("id", 1)
+      .single();
+
+    if (gameError || !game) {
+      console.error("Failed to load game before submit:", gameError);
+      alert("Failed to load game state.");
+      return;
+    }
+
+    if (game.phase !== "answering") {
+      alert("This round is no longer accepting answers.");
+      return;
+    }
+
+    const round = game.round_number;
+
+    const { error } = await client.from("answers").insert([
+      {
+        name: playerName,
+        answer: answer,
+        round_number: round,
+      },
+    ]);
+
+    if (error) {
+      console.error("Submit error:", error);
+      alert("Submit failed: " + error.message);
+      return;
+    }
+
+    localStorage.setItem("submitted", "true");
+    showSubmittedScreen();
+  } catch (err) {
+    console.error("Unexpected submit error:", err);
+    alert("Something went wrong while submitting.");
   }
-
-  if (containsBannedWords(answer)) {
-    alert("Please keep your advice respectful");
-    return;
-  }
-
-  const { data: game } = await client
-    .from("game_state")
-    .select("round_number")
-    .eq("id", 1)
-    .single();
-
-  const round = game.round_number;
-
-  const { error } = await client.from("answers").insert([
-    {
-      name: playerName,
-      answer: answer,
-      round_number: round,
-    },
-  ]);
-
-  if (error) {
-    console.error(error);
-    alert("You already submitted this round!");
-    return;
-  }
-
-  localStorage.setItem("submitted", "true");
-
-  document.getElementById("answer-screen").style.display = "none";
-  document.getElementById("submitted-screen").style.display = "block";
 }
 
 // ======================
-// RESET (TESTING)
+// RESET LOCAL (TESTING)
 // ======================
 
 function resetGame() {
@@ -256,6 +329,5 @@ function containsBannedWords(answer) {
   ];
 
   const text = answer.toLowerCase();
-
   return bannedWords.some((banned) => text.includes(banned));
 }

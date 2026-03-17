@@ -1,8 +1,5 @@
 .vercel
 .env*.local
-<<<<<<< HEAD
-=======
 node_modules/
 .DS_Store
 .env
->>>>>>> c4a2df5 (initial clean commit)

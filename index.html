@@ -2,41 +2,41 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Marriage Advice Game</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   </head>
 
   <body>
-    <!-- ========================= -->
-    <!-- JOIN SCREEN -->
-    <!-- ========================= -->
-
     <div id="join-screen" class="container">
-
-      <img src="assets/gamelogo.png" class="game-logo" alt="Marriage Advice Game">
+      <img
+        src="assets/gamelogo.png"
+        class="game-logo"
+        alt="Marriage Advice Game"
+      />
 
       <div class="join-card">
-
         <h3 class="join-title">
           Enter the room to give your best marriage advice!
         </h3>
 
         <input id="name" class="input" placeholder="Your name" />
 
-        <input 
-          id="table" 
-          type="number" 
-          inputmode="numeric" 
-          min="1" 
-          step="1" 
-          max="23" 
-          class="input" 
-          placeholder="Table number" 
+        <input
+          id="table"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          step="1"
+          max="23"
+          class="input"
+          placeholder="Table number"
         />
 
         <input
@@ -47,16 +47,10 @@
         />
 
         <button class="submit-btn" onclick="joinGame()">Join Game</button>
-
       </div>
 
       <p id="join-error"></p>
-
     </div>
-
-    <!-- ========================= -->
-    <!-- WAITING ROOM -->
-    <!-- ========================= -->
 
     <div id="waiting-screen" style="display: none" class="container">
       <h1 class="title">Waiting for host to start...</h1>
@@ -65,10 +59,6 @@
         <p>Please look at the big screen.</p>
       </div>
     </div>
-
-    <!-- ========================= -->
-    <!-- ANSWER SCREEN -->
-    <!-- ========================= -->
 
     <div id="answer-screen" style="display: none" class="container">
       <div id="player-info" class="player-info" style="display: none">
@@ -93,10 +83,6 @@
 
       <p class="hint">Watch the big screen for results!</p>
     </div>
-
-    <!-- ========================= -->
-    <!-- SUBMITTED SCREEN -->
-    <!-- ========================= -->
 
     <div id="submitted-screen" style="display: none" class="container">
       <h1 class="title">✅ Advice Submitted!</h1>

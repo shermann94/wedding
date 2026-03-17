@@ -5,11 +5,18 @@ const MODEL_NAME = "gemini-2.5-flash-lite";
 const MAX_RETRIES = 3;
 
 function isValidRequestBody(scenario, answers) {
-  return !!scenario && Array.isArray(answers) && answers.length > 0;
+  return (
+    typeof scenario === "string" &&
+    scenario.trim().length > 0 &&
+    Array.isArray(answers) &&
+    answers.length > 0
+  );
 }
 
 function normalizeAnswers(answers) {
-  return answers.map((answer) => String(answer ?? "").trim());
+  return answers
+    .map((answer) => String(answer ?? "").trim())
+    .filter((answer) => answer.length > 0);
 }
 
 function buildPrompt(scenario, answers) {
@@ -19,6 +26,13 @@ function buildPrompt(scenario, answers) {
 
   return `
 Pick the funniest wedding-safe answer.
+
+Rules:
+- Choose exactly one winner.
+- winner_index must be a valid integer index from the answers list.
+- reason must be short.
+- Return only JSON.
+- Do not use markdown or code fences.
 
 Return JSON:
 { "winner_index": number, "reason": "short reason" }
@@ -54,10 +68,12 @@ function parseModelResponse(text, answerCount) {
     throw error;
   }
 
+  const winnerIndex = Number(parsed?.winner_index);
+
   if (
-    typeof parsed?.winner_index !== "number" ||
-    parsed.winner_index < 0 ||
-    parsed.winner_index >= answerCount
+    !Number.isInteger(winnerIndex) ||
+    winnerIndex < 0 ||
+    winnerIndex >= answerCount
   ) {
     const error = new Error("AI returned invalid winner_index");
     error.status = 500;
@@ -67,7 +83,7 @@ function parseModelResponse(text, answerCount) {
 
   return {
     received_count: answerCount,
-    winner_index: parsed.winner_index,
+    winner_index: winnerIndex,
     reason:
       typeof parsed?.reason === "string" && parsed.reason.trim()
         ? parsed.reason.trim()
@@ -75,9 +91,13 @@ function parseModelResponse(text, answerCount) {
   };
 }
 
-function isRetryableError(message) {
+function isRetryableError(message = "") {
   const lower = message.toLowerCase();
-  return message.includes("429") || lower.includes("quota");
+  return (
+    lower.includes("429") ||
+    lower.includes("quota") ||
+    lower.includes("rate limit")
+  );
 }
 
 function sleep(ms) {
@@ -137,7 +157,12 @@ export default async function handler(req, res) {
     }
 
     const cleanedAnswers = normalizeAnswers(answers);
-    const prompt = buildPrompt(scenario, cleanedAnswers);
+
+    if (cleanedAnswers.length === 0) {
+      return res.status(400).json({ error: "No valid answers provided" });
+    }
+
+    const prompt = buildPrompt(scenario.trim(), cleanedAnswers);
     const result = await generateWithRetry(prompt, cleanedAnswers.length);
 
     return res.status(200).json(result);

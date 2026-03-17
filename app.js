@@ -14,6 +14,7 @@ let maxPlayers = 100;
 window.onload = async function () {
   if (localStorage.getItem("joined") === "true") {
     showWaiting();
+
     const playerName = localStorage.getItem("playerName");
     const tableNo = localStorage.getItem("tableNo");
 
@@ -26,7 +27,7 @@ window.onload = async function () {
       document.getElementById("player-table-display").innerText =
         " — Table " + tableNo;
     }
-    // check if round already started
+
     const { data } = await client
       .from("game_state")
       .select("*")
@@ -39,24 +40,10 @@ window.onload = async function () {
   }
 };
 
-<<<<<<< HEAD
-// ======================
-// JOIN GAME
-// ======================
-
-=======
->>>>>>> c4a2df5 (initial clean commit)
 // ===============================
 // JOIN GAME
 // ===============================
 async function joinGame() {
-<<<<<<< HEAD
-  // get values from input fields
-  const playerName = document.getElementById("name").value;
-  const tableNo = document.getElementById("table").value;
-  const roomCode = document.getElementById("roomcode").value;
-=======
-
   // check if game already started
   const { data: game } = await client
     .from("game_state")
@@ -70,19 +57,18 @@ async function joinGame() {
     return;
   }
 
-  // get values from input fields
+  // get values
   const playerName = document.getElementById("name").value;
   const tableNo = document.getElementById("table").value;
-  const roomCode = document.getElementById("roomcode").value.toUpperCase();
->>>>>>> c4a2df5 (initial clean commit)
+  const roomCode = document
+    .getElementById("roomcode")
+    .value.toUpperCase();
 
-  // basic validation
   if (!playerName || !tableNo || !roomCode) {
     alert("Please fill in your name, table number and room code");
     return;
   }
 
-  // insert player into database
   const { error } = await client.from("players").insert([
     {
       name: playerName,
@@ -97,29 +83,21 @@ async function joinGame() {
     return;
   }
 
-  // save player info locally
   localStorage.setItem("playerName", playerName);
   localStorage.setItem("tableNo", tableNo);
   localStorage.setItem("roomCode", roomCode);
   localStorage.setItem("joined", "true");
 
-  // show player identity container
   document.getElementById("player-info").style.display = "block";
 
-<<<<<<< HEAD
-  document.getElementById("player-name-display").innerText = "👤 " + playerName;
-=======
   document.getElementById("player-name-display").innerText =
     "👤 " + playerName;
->>>>>>> c4a2df5 (initial clean commit)
 
   document.getElementById("player-table-display").innerText =
     " — Table " + tableNo;
 
-  // hide join section
   document.getElementById("join-screen").style.display = "none";
 
-  // show waiting screen
   showWaiting();
 }
 
@@ -132,15 +110,9 @@ function showWaiting() {
   document.getElementById("waiting-screen").style.display = "block";
 }
 
-<<<<<<< HEAD
-// ======================
+// ==================================
 // LISTEN FOR ROUND START
-// ======================
-=======
 // ==================================
-// LISTEN FOR ROUND START - Listener
-// ==================================
->>>>>>> c4a2df5 (initial clean commit)
 
 client
   .channel("game_state_updates")
@@ -152,25 +124,16 @@ client
       table: "game_state",
     },
     (payload) => {
-<<<<<<< HEAD
-      if (
-        localStorage.getItem("joined") === "true" &&
-        payload.new.phase === "answering"
-      ) {
-        showAnswerScreen();
-      }
-=======
-
       const phase = payload.new.phase;
 
-      // 🔁 detect reset from host
+      // reset game
       if (phase === "waiting") {
         localStorage.clear();
         location.reload();
         return;
       }
 
-      // ▶ round started
+      // round starts
       if (
         localStorage.getItem("joined") === "true" &&
         phase === "answering"
@@ -178,9 +141,7 @@ client
         localStorage.removeItem("submitted");
         showAnswerScreen();
       }
-
->>>>>>> c4a2df5 (initial clean commit)
-    },
+    }
   )
   .subscribe();
 
@@ -189,32 +150,20 @@ client
 // ======================
 
 async function showAnswerScreen() {
-  // hide other screens
   document.getElementById("join-screen").style.display = "none";
   document.getElementById("waiting-screen").style.display = "none";
-<<<<<<< HEAD
-
-  // check if player already submitted
-  if (localStorage.getItem("submitted") === "true") {
-=======
   document.getElementById("submitted-screen").style.display = "none";
 
-  // clear previous answer input
   document.getElementById("answer").value = "";
 
-  // check if player already submitted
   if (localStorage.getItem("submitted") === "true") {
     document.getElementById("answer-screen").style.display = "none";
->>>>>>> c4a2df5 (initial clean commit)
     document.getElementById("submitted-screen").style.display = "block";
-
     return;
   }
 
-  // show answer screen
   document.getElementById("answer-screen").style.display = "block";
 
-  // load scenario
   const { data } = await client
     .from("game_state")
     .select("*")
@@ -229,7 +178,6 @@ async function showAnswerScreen() {
 // ======================
 
 async function submitAdvice() {
-  // get player input
   const answer = document.getElementById("answer").value.trim();
   const playerName = localStorage.getItem("playerName");
 
@@ -243,7 +191,6 @@ async function submitAdvice() {
     return;
   }
 
-  // get current round
   const { data: game } = await client
     .from("game_state")
     .select("round_number")
@@ -252,7 +199,6 @@ async function submitAdvice() {
 
   const round = game.round_number;
 
-  // insert answer
   const { error } = await client.from("answers").insert([
     {
       name: playerName,
@@ -267,29 +213,24 @@ async function submitAdvice() {
     return;
   }
 
-<<<<<<< HEAD
-  // clear input
-  document.getElementById("answer").value = "";
-=======
-  // ✅ mark submission locally
   localStorage.setItem("submitted", "true");
 
-  // hide answer screen
   document.getElementById("answer-screen").style.display = "none";
-
-  // show submitted screen
   document.getElementById("submitted-screen").style.display = "block";
->>>>>>> c4a2df5 (initial clean commit)
 }
 
 // ======================
-// RESET PLAYER STATE (FOR TESTING)
+// RESET (TESTING)
 // ======================
 
 function resetGame() {
   localStorage.clear();
   location.reload();
 }
+
+// ======================
+// FILTER
+// ======================
 
 function containsBannedWords(answer) {
   const bannedWords = [

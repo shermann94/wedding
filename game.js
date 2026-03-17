@@ -195,7 +195,127 @@ async function nextRound() {
 
   document.getElementById("answers").innerHTML = "";
 }
+// ===============================
+// use AI later
+// ===============================
+async function evaluateAnswers() {
+  console.log("Evaluating answers with AI...");
 
+  const { data: game, error: gameError } = await client
+    .from("game_state")
+    .select("round_number, scenario")
+    .eq("id", 1)
+    .single();
+
+  if (gameError || !game) {
+    console.error("Failed to load game state:", gameError);
+    alert("Failed to load game state.");
+    return null;
+  }
+
+  const round = game.round_number;
+
+  const { data, error: answersError } = await client
+    .from("answers")
+    .select("name, answer")
+    .eq("round_number", round)
+    .order("id", { ascending: true });
+
+  if (answersError) {
+    console.error("Failed to load answers:", answersError);
+    alert("Failed to load answers.");
+    return null;
+  }
+
+  const answers = (data || [])
+    .map((row) => ({
+      name: row.name?.trim(),
+      answer: row.answer?.trim(),
+    }))
+    .filter((row) => row.answer && row.answer !== "{}")
+    .filter((a) => a.answer.length > 5);
+
+  console.log("Current answers:", answers);
+
+  if (answers.length === 0) {
+    alert("No valid answers to judge.");
+    return null;
+  }
+
+  const { error: phaseError } = await client
+    .from("game_state")
+    .update({
+      phase: "judging",
+    })
+    .eq("id", 1);
+
+  if (phaseError) {
+    console.error("Failed to update phase:", phaseError);
+    alert("Failed to enter judging phase.");
+    return null;
+  }
+
+  const payload = {
+    scenario: game.scenario,
+    answers: answers.map((a) => a.answer),
+  };
+
+  const response = await fetch("/api/test-ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json();
+
+  console.log("AI result:", result);
+
+  if (
+    !response.ok ||
+    !result ||
+    result.winner_index === undefined ||
+    result.winner_index === null
+  ) {
+    console.error("AI response invalid:", result);
+    alert("AI failed to judge answers.");
+    return null;
+  }
+
+  const winnerIndex = result.winner_index;
+  const winner = answers[winnerIndex];
+
+  if (!winner) {
+    console.error("Winner index invalid:", winnerIndex);
+    alert("AI returned an invalid winner.");
+    return null;
+  }
+
+  console.log("Winning player:", winner.name);
+  console.log("Winning answer:", winner.answer);
+  console.log("Winning reason:", result.reason);
+
+  const { error: resultsPhaseError } = await client
+    .from("game_state")
+    .update({
+      phase: "results",
+    })
+    .eq("id", 1);
+
+  if (resultsPhaseError) {
+    console.error("Failed to update results phase:", resultsPhaseError);
+    alert("Winner chosen, but failed to update game phase.");
+  }
+
+  // TODO: store winner in database for historical tracking, those who have won should not have their responses judged in future rounds
+  return {
+    scenario: game.scenario,
+    winner_name: winner.name,
+    winner_answer: winner.answer,
+    reason: result.reason,
+  };
+}
 // ===============================
 // RESET GAME
 // ===============================

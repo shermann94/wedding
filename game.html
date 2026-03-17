@@ -13,27 +13,18 @@
 
 </head>
 
-
 <body>
 
 <div class="game-container">
 
-
 <!-- GAME TITLE -->
-
 <h1 class="game-title">
 💍 Marriage Advice Game
 </h1>
 
 
-
 <!-- LOBBY -->
-
-<<<<<<< HEAD
-<div class="lobby">
-=======
 <div class="lobby" id="lobby">
->>>>>>> c4a2df5 (initial clean commit)
 
 <h2>Room Code</h2>
 
@@ -42,13 +33,11 @@
 <p id="player-count">0 / 100 players joined</p>
 
 <p id="answer-count" style="display:none"></p>
-  
+
 </div>
 
 
-
 <!-- SCENARIO -->
-
 <div class="scenario-card" id="scenario-card" style="display:none;">
 
 <h2 id="scenario">
@@ -57,49 +46,32 @@ Waiting for round to start...
 
 </div>
 
-<<<<<<< HEAD
 
-
-<!-- ANSWERS AREA -->
-
-<div id="answers" class="answers-box"></div>
-
-
-=======
+<!-- WINNER CARD -->
 <div class="scenario-card" id="winner-card" style="display:none;">
+
+<h2>🏆 Best Marriage Advice</h2>
+
+<p id="winner-answer"></p>
+<p id="winner-player"></p>
+<p id="winner-reason"></p>
+
+</div>
+
+
+<!-- LEADERBOARD -->
 <div class="scenario-card" id="leaderboard-card" style="display:none">
 
 <h2>🏆 Leaderboard</h2>
 
 <div id="leaderboard-list"></div>
 
-</div>    
-
-<h2>🏆 Best Marriage Advice</h2>
-
-<p id="winner-answer"></p>
-
-<p id="winner-player"></p>
-
-<p id="winner-reason"></p>
-
-
 </div>
->>>>>>> c4a2df5 (initial clean commit)
+
 
 <!-- HOST CONTROLS -->
-
 <div class="controls">
 
-<<<<<<< HEAD
-<button onclick="startGame()">Start Game</button>
-
-<button onclick="evaluateAnswers()">Evaluate Answers</button>
-
-<button onclick="nextRound()">Next Round</button>
-
-<button onclick="resetGame()">Reset Game</button>
-=======
 <button id="start-game-btn" onclick="startGame()">Start Game</button>
 
 <button id="evaluate-btn" style="display:none" onclick="evaluateAnswers()">Evaluate Answers</button>
@@ -111,20 +83,14 @@ Show Leaderboard
 </button>
 
 <button id="reset-btn" style="display:none" onclick="resetGame()">Reset Game</button>
->>>>>>> c4a2df5 (initial clean commit)
 
 </div>
 
 
-<<<<<<< HEAD
-=======
 <!-- ANSWERS AREA -->
-
 <div id="answers" class="answers-box"></div>
 
->>>>>>> c4a2df5 (initial clean commit)
 </div>
-
 
 <script src="game.js"></script>
 

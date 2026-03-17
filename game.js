@@ -285,7 +285,17 @@ async function evaluateAnswers() {
 
   const winnerIndex = result.winner_index;
   const winner = answers[winnerIndex];
-  // get player's table number
+ 
+  // show winner card
+  document.getElementById("winner-card").style.display = "block";
+
+  document.getElementById("winner-answer").innerText =
+  "\"" + winner.answer + "\"";
+
+  document.getElementById("winner-player").innerText =
+  "— " + winner.name;
+
+   // get player's table number
 const { data: player } = await client
   .from("players")
   .select("table_no")
@@ -301,14 +311,6 @@ await client.from("winners").insert([
     answer: winner.answer
   }
 ]);
-  // show winner card
-  document.getElementById("winner-card").style.display = "block";
-
-  document.getElementById("winner-answer").innerText =
-  "\"" + winner.answer + "\"";
-
-  document.getElementById("winner-player").innerText =
-  "— " + winner.name;
 
   if (!winner) {
     console.error("Winner index invalid:", winnerIndex);

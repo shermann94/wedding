@@ -1,99 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marriage Advice Game - Host</title>
 
-<head>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  </head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <body>
+    <div class="game-container">
+      <h1 class="game-title">💍 Marriage Advice Game</h1>
 
-<title>Marriage Advice Game</title>
+      <div class="lobby" id="lobby">
+        <h2>Room Code</h2>
+        <h1 id="room-code">----</h1>
+        <p id="player-count">0 / 100 players joined</p>
+        <p id="answer-count" style="display: none"></p>
+      </div>
 
-<link rel="stylesheet" href="style.css">
+      <div class="scenario-card" id="scenario-card" style="display: none">
+        <h2 id="scenario">Waiting for round to start...</h2>
+      </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+      <div class="scenario-card" id="winner-card" style="display: none">
+        <h2>🏆 Best Marriage Advice</h2>
+        <p id="winner-answer"></p>
+        <p id="winner-player"></p>
+        <p id="winner-reason"></p>
+      </div>
 
-</head>
+      <div class="scenario-card" id="leaderboard-card" style="display: none">
+        <h2>🏆 Leaderboard</h2>
+        <div id="leaderboard-list"></div>
+      </div>
 
-<body>
+      <div class="controls">
+        <button id="start-game-btn" onclick="startGame()">Start Game</button>
 
-<div class="game-container">
+        <button
+          id="evaluate-btn"
+          style="display: none"
+          onclick="evaluateAnswers()"
+        >
+          Evaluate Answers
+        </button>
 
-<!-- GAME TITLE -->
-<h1 class="game-title">
-💍 Marriage Advice Game
-</h1>
+        <button id="next-round-btn" style="display: none" onclick="nextRound()">
+          Next Round
+        </button>
 
+        <button
+          id="leaderboard-btn"
+          onclick="showLeaderboard()"
+          style="display: none"
+        >
+          Show Leaderboard
+        </button>
 
-<!-- LOBBY -->
-<div class="lobby" id="lobby">
+        <button id="reset-btn" style="display: none" onclick="resetGame()">
+          Reset Game
+        </button>
+      </div>
 
-<h2>Room Code</h2>
+      <div id="answers" class="answers-box"></div>
+    </div>
 
-<h1 id="room-code">----</h1>
-
-<p id="player-count">0 / 100 players joined</p>
-
-<p id="answer-count" style="display:none"></p>
-
-</div>
-
-
-<!-- SCENARIO -->
-<div class="scenario-card" id="scenario-card" style="display:none;">
-
-<h2 id="scenario">
-Waiting for round to start...
-</h2>
-
-</div>
-
-
-<!-- WINNER CARD -->
-<div class="scenario-card" id="winner-card" style="display:none;">
-
-<h2>🏆 Best Marriage Advice</h2>
-
-<p id="winner-answer"></p>
-<p id="winner-player"></p>
-<p id="winner-reason"></p>
-
-</div>
-
-
-<!-- LEADERBOARD -->
-<div class="scenario-card" id="leaderboard-card" style="display:none">
-
-<h2>🏆 Leaderboard</h2>
-
-<div id="leaderboard-list"></div>
-
-</div>
-
-
-<!-- HOST CONTROLS -->
-<div class="controls">
-
-<button id="start-game-btn" onclick="startGame()">Start Game</button>
-
-<button id="evaluate-btn" style="display:none" onclick="evaluateAnswers()">Evaluate Answers</button>
-
-<button id="next-round-btn" style="display:none" onclick="nextRound()">Next Round</button>
-
-<button id="leaderboard-btn" onclick="showLeaderboard()" style="display:none">
-Show Leaderboard
-</button>
-
-<button id="reset-btn" style="display:none" onclick="resetGame()">Reset Game</button>
-
-</div>
-
-
-<!-- ANSWERS AREA -->
-<div id="answers" class="answers-box"></div>
-
-</div>
-
-<script src="game.js"></script>
-
-</body>
-
+    <script src="game.js"></script>
+  </body>
 </html>

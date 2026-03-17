@@ -1,84 +1,137 @@
-// URL of your Supabase project
 const supabaseUrl = "https://dmztipmhrwxdjnogznvi.supabase.co";
-
-// URL of your Supabase project
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU";
 
-// Create Supabase client
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ===============================
-// LOAD GAME DATA
+// LOAD GAME
 // ===============================
 
 async function loadGame() {
-  const { data, error } = await client
-    .from("game_state")
-    .select("*")
-    .eq("id", 1)
-    .single();
+  try {
+    const { data, error } = await client
+      .from("game_state")
+      .select("*")
+      .eq("id", 1)
+      .single();
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+    if (error || !data) {
+      console.error("Failed to load game:", error);
+      return;
+    }
 
-  const formattedCode =
-    data.room_code.slice(0, 4) + "-" + data.room_code.slice(4);
+    const roomCode = data.room_code || "";
+    const formattedCode =
+      roomCode.length >= 8
+        ? roomCode.slice(0, 4) + "-" + roomCode.slice(4)
+        : roomCode;
 
-  document.getElementById("room-code").innerText = formattedCode;
+    document.getElementById("room-code").innerText = formattedCode || "----";
+    document.getElementById("scenario").innerText =
+      data.scenario || "Waiting for round to start...";
 
-  updatePlayerCount();
-  updateAnswerCount();
+    setPhaseUI(data.phase);
+    await updatePlayerCount();
+    await updateAnswerCount();
 
-  // UI control
-  if (data.phase === "answering") {
-    document.getElementById("lobby").style.display = "none";
-    document.getElementById("scenario-card").style.display = "block";
-    document.getElementById("scenario").innerText = data.scenario;
-  } else {
-    document.getElementById("lobby").style.display = "block";
-    document.getElementById("scenario-card").style.display = "none";
-  }
-
-  // Button states
-  if (data.phase === "waiting") {
-    document.getElementById("start-game-btn").style.display = "inline-block";
-    document.getElementById("evaluate-btn").style.display = "none";
-    document.getElementById("next-round-btn").style.display = "none";
-    document.getElementById("reset-btn").style.display = "none";
-    document.getElementById("winner-card").style.display = "none";
-  } else if (data.phase === "answering") {
-    document.getElementById("start-game-btn").style.display = "none";
-    document.getElementById("evaluate-btn").style.display = "inline-block";
-    document.getElementById("next-round-btn").style.display = "inline-block";
-    document.getElementById("reset-btn").style.display = "inline-block";
+    if (data.phase === "results") {
+      await loadWinnerForRound(data.round_number);
+    }
+  } catch (err) {
+    console.error("Unexpected loadGame error:", err);
   }
 }
 
 loadGame();
 
 // ===============================
+// UI STATE
+// ===============================
+
+function setPhaseUI(phase) {
+  const lobby = document.getElementById("lobby");
+  const scenarioCard = document.getElementById("scenario-card");
+  const winnerCard = document.getElementById("winner-card");
+
+  const startBtn = document.getElementById("start-game-btn");
+  const evaluateBtn = document.getElementById("evaluate-btn");
+  const nextBtn = document.getElementById("next-round-btn");
+  const resetBtn = document.getElementById("reset-btn");
+  const leaderboardBtn = document.getElementById("leaderboard-btn");
+
+  leaderboardBtn.style.display = "none";
+
+  if (phase === "waiting") {
+    lobby.style.display = "block";
+    scenarioCard.style.display = "none";
+    winnerCard.style.display = "none";
+
+    startBtn.style.display = "inline-block";
+    evaluateBtn.style.display = "none";
+    nextBtn.style.display = "none";
+    resetBtn.style.display = "none";
+  } else if (phase === "answering") {
+    lobby.style.display = "none";
+    scenarioCard.style.display = "block";
+    winnerCard.style.display = "none";
+
+    startBtn.style.display = "none";
+    evaluateBtn.style.display = "inline-block";
+    nextBtn.style.display = "inline-block";
+    resetBtn.style.display = "inline-block";
+  } else if (phase === "judging") {
+    lobby.style.display = "none";
+    scenarioCard.style.display = "block";
+    winnerCard.style.display = "none";
+
+    startBtn.style.display = "none";
+    evaluateBtn.style.display = "none";
+    nextBtn.style.display = "none";
+    resetBtn.style.display = "inline-block";
+  } else if (phase === "results") {
+    lobby.style.display = "none";
+    scenarioCard.style.display = "block";
+    winnerCard.style.display = "block";
+
+    startBtn.style.display = "none";
+    evaluateBtn.style.display = "none";
+    nextBtn.style.display = "inline-block";
+    resetBtn.style.display = "inline-block";
+  }
+}
+
+// ===============================
 // PLAYER COUNT
 // ===============================
 
 async function updatePlayerCount() {
-  const { count } = await client
-    .from("players")
-    .select("*", { count: "exact", head: true });
+  try {
+    const { count, error } = await client
+      .from("players")
+      .select("*", { count: "exact", head: true });
 
-  document.getElementById("player-count").innerText =
-    count + " / 100 players joined";
+    if (error) {
+      console.error("Player count error:", error);
+      return;
+    }
+
+    document.getElementById("player-count").innerText =
+      (count ?? 0) + " / 100 players joined";
+  } catch (err) {
+    console.error("Unexpected player count error:", err);
+  }
 }
 
-// realtime player join
 client
   .channel("players-channel")
   .on(
     "postgres_changes",
-    { event: "INSERT", schema: "public", table: "players" },
-    () => updatePlayerCount()
+    { event: "*", schema: "public", table: "players" },
+    async () => {
+      await updatePlayerCount();
+      await updateAnswerCount();
+    },
   )
   .subscribe();
 
@@ -91,17 +144,25 @@ client
   .on(
     "postgres_changes",
     { event: "UPDATE", schema: "public", table: "game_state" },
-    (payload) => {
-      if (payload.new.phase === "answering") {
-        document.getElementById("scenario-card").style.display = "block";
-        document.getElementById("scenario").innerText =
-          payload.new.scenario;
+    async (payload) => {
+      const phase = payload.new.phase;
+
+      document.getElementById("scenario").innerText =
+        payload.new.scenario || "Waiting for round to start...";
+
+      setPhaseUI(phase);
+      await updateAnswerCount();
+
+      if (phase === "results") {
+        await loadWinnerForRound(payload.new.round_number);
+      } else {
+        document.getElementById("winner-card").style.display = "none";
       }
 
-      if (payload.new.phase === "waiting") {
-        document.getElementById("scenario-card").style.display = "none";
+      if (phase === "waiting") {
+        document.getElementById("answers").innerHTML = "";
       }
-    }
+    },
   )
   .subscribe();
 
@@ -115,19 +176,31 @@ client
     "postgres_changes",
     { event: "INSERT", schema: "public", table: "answers" },
     async (payload) => {
-      const answer = payload.new.answer;
+      try {
+        const answer = payload.new.answer;
 
-      const { data: game } = await client
-        .from("game_state")
-        .select("round_number")
-        .eq("id", 1)
-        .single();
+        const { data: game, error } = await client
+          .from("game_state")
+          .select("round_number, phase")
+          .eq("id", 1)
+          .single();
 
-      if (payload.new.round_number === game.round_number) {
-        spawnAnswerBubble(answer);
-        updateAnswerCount();
+        if (error || !game) {
+          console.error("Failed to load game for answer feed:", error);
+          return;
+        }
+
+        if (
+          payload.new.round_number === game.round_number &&
+          game.phase === "answering"
+        ) {
+          spawnAnswerBubble(answer);
+          await updateAnswerCount();
+        }
+      } catch (err) {
+        console.error("Answer feed error:", err);
       }
-    }
+    },
   )
   .subscribe();
 
@@ -136,64 +209,110 @@ client
 // ===============================
 
 async function startGame() {
-  const { data: scenarioData } = await client
-    .from("scenarios")
-    .select("*")
-    .eq("round_number", 1)
-    .maybeSingle();
+  try {
+    const { data: scenarioData, error: scenarioError } = await client
+      .from("scenarios")
+      .select("*")
+      .eq("round_number", 1)
+      .maybeSingle();
 
-  await client
-    .from("game_state")
-    .update({
-      round_number: 1,
-      phase: "answering",
-      scenario: scenarioData.scenario,
-    })
-    .eq("id", 1);
+    if (scenarioError || !scenarioData) {
+      console.error("Failed to load round 1 scenario:", scenarioError);
+      alert("Failed to load round 1 scenario.");
+      return;
+    }
 
-  document.getElementById("start-game-btn").style.display = "none";
-  document.getElementById("evaluate-btn").style.display = "inline-block";
-  document.getElementById("next-round-btn").style.display = "inline-block";
-  document.getElementById("reset-btn").style.display = "inline-block";
+    const { error } = await client
+      .from("game_state")
+      .update({
+        round_number: 1,
+        phase: "answering",
+        scenario: scenarioData.scenario,
+      })
+      .eq("id", 1);
 
-  document.getElementById("lobby").style.display = "none";
+    if (error) {
+      console.error("Start game error:", error);
+      alert("Failed to start game: " + error.message);
+      return;
+    }
+
+    document.getElementById("answers").innerHTML = "";
+    document.getElementById("leaderboard-card").style.display = "none";
+    await updateAnswerCount();
+  } catch (err) {
+    console.error("Unexpected startGame error:", err);
+  }
 }
 
 async function nextRound() {
-  document.getElementById("winner-card").style.display = "none";
+  try {
+    document.getElementById("winner-card").style.display = "none";
+    document.getElementById("winner-answer").innerText = "";
+    document.getElementById("winner-player").innerText = "";
+    document.getElementById("winner-reason").innerText = "";
 
-  const { data } = await client
-    .from("game_state")
-    .select("*")
-    .eq("id", 1)
-    .single();
+    const { data: game, error: gameError } = await client
+      .from("game_state")
+      .select("*")
+      .eq("id", 1)
+      .single();
 
-  const nextRound = data.round_number + 1;
+    if (gameError || !game) {
+      console.error("Failed to load game for next round:", gameError);
+      alert("Failed to load current round.");
+      return;
+    }
 
-  if (nextRound > 5) {
-    document.getElementById("leaderboard-btn").style.display =
-      "inline-block";
-    return;
+    const nextRoundNumber = game.round_number + 1;
+
+    if (nextRoundNumber > 5) {
+      document.getElementById("leaderboard-btn").style.display = "inline-block";
+      return;
+    }
+
+    const { data: scenarioData, error: scenarioError } = await client
+      .from("scenarios")
+      .select("*")
+      .eq("round_number", nextRoundNumber)
+      .maybeSingle();
+
+    if (scenarioError || !scenarioData) {
+      console.error("Failed to load next scenario:", scenarioError);
+      alert("Failed to load next round scenario.");
+      return;
+    }
+
+    const { error: updateError } = await client
+      .from("game_state")
+      .update({
+        round_number: nextRoundNumber,
+        phase: "answering",
+        scenario: scenarioData.scenario,
+      })
+      .eq("id", 1);
+
+    if (updateError) {
+      console.error("Next round update error:", updateError);
+      alert("Failed to start next round: " + updateError.message);
+      return;
+    }
+
+    const { error: deleteError } = await client
+      .from("answers")
+      .delete()
+      .gt("id", 0);
+
+    if (deleteError) {
+      console.error("Failed to clear answers:", deleteError);
+      alert("Round changed, but failed to clear answers.");
+    }
+
+    document.getElementById("answers").innerHTML = "";
+    await updateAnswerCount();
+  } catch (err) {
+    console.error("Unexpected nextRound error:", err);
   }
-
-  const { data: scenarioData } = await client
-    .from("scenarios")
-    .select("*")
-    .eq("round_number", nextRound)
-    .maybeSingle();
-
-  await client
-    .from("game_state")
-    .update({
-      round_number: nextRound,
-      phase: "answering",
-      scenario: scenarioData.scenario,
-    })
-    .eq("id", 1);
-
-  await client.from("answers").delete().gt("id", 0);
-
-  document.getElementById("answers").innerHTML = "";
 }
 
 // ===============================
@@ -201,27 +320,60 @@ async function nextRound() {
 // ===============================
 
 async function resetGame() {
-  await client
-    .from("game_state")
-    .update({
-      phase: "waiting",
-      round_number: 1,
-      scenario: "Waiting for round to start...",
-    })
-    .eq("id", 1);
+  try {
+    const { error: stateError } = await client
+      .from("game_state")
+      .update({
+        phase: "waiting",
+        round_number: 1,
+        scenario: "Waiting for round to start...",
+      })
+      .eq("id", 1);
 
-  await client.from("answers").delete().not("id", "is", null);
-  await client.from("players").delete().not("id", "is", null);
+    if (stateError) {
+      console.error("Reset game_state error:", stateError);
+      alert("Failed to reset game state: " + stateError.message);
+      return;
+    }
 
-  document.getElementById("answers").innerHTML = "";
-  document.getElementById("winner-card").style.display = "none";
+    const { error: answersError } = await client
+      .from("answers")
+      .delete()
+      .not("id", "is", null);
 
-  document.getElementById("start-game-btn").style.display = "block";
-  document.getElementById("evaluate-btn").style.display = "none";
-  document.getElementById("next-round-btn").style.display = "none";
-  document.getElementById("reset-btn").style.display = "none";
+    if (answersError) {
+      console.error("Reset answers error:", answersError);
+    }
 
-  loadGame();
+    const { error: playersError } = await client
+      .from("players")
+      .delete()
+      .not("id", "is", null);
+
+    if (playersError) {
+      console.error("Reset players error:", playersError);
+    }
+
+    const { error: winnersError } = await client
+      .from("winners")
+      .delete()
+      .not("id", "is", null);
+
+    if (winnersError) {
+      console.error("Reset winners error:", winnersError);
+    }
+
+    document.getElementById("answers").innerHTML = "";
+    document.getElementById("winner-card").style.display = "none";
+    document.getElementById("winner-answer").innerText = "";
+    document.getElementById("winner-player").innerText = "";
+    document.getElementById("winner-reason").innerText = "";
+    document.getElementById("leaderboard-card").style.display = "none";
+
+    await loadGame();
+  } catch (err) {
+    console.error("Unexpected resetGame error:", err);
+  }
 }
 
 // ===============================
@@ -230,7 +382,6 @@ async function resetGame() {
 
 function spawnAnswerBubble(text) {
   const bubble = document.createElement("div");
-
   bubble.className = "answer-item";
   bubble.innerText = text;
 
@@ -239,7 +390,11 @@ function spawnAnswerBubble(text) {
 
   document.getElementById("answers").appendChild(bubble);
 
-  setTimeout(() => bubble.remove(), 4000);
+  setTimeout(() => {
+    if (bubble.parentNode) {
+      bubble.remove();
+    }
+  }, 4000);
 }
 
 // ===============================
@@ -247,32 +402,51 @@ function spawnAnswerBubble(text) {
 // ===============================
 
 async function updateAnswerCount() {
-  const { data: game } = await client
-    .from("game_state")
-    .select("round_number, phase")
-    .eq("id", 1)
-    .single();
+  try {
+    const { data: game, error: gameError } = await client
+      .from("game_state")
+      .select("round_number, phase")
+      .eq("id", 1)
+      .single();
 
-  if (game.phase === "waiting") {
-    document.getElementById("answer-count").style.display = "none";
-    return;
+    if (gameError || !game) {
+      console.error("Answer count game state error:", gameError);
+      return;
+    }
+
+    if (game.phase === "waiting") {
+      document.getElementById("answer-count").style.display = "none";
+      return;
+    }
+
+    document.getElementById("answer-count").style.display = "block";
+
+    const round = game.round_number;
+
+    const { count: playerCount, error: playerError } = await client
+      .from("players")
+      .select("*", { count: "exact", head: true });
+
+    if (playerError) {
+      console.error("Player count error:", playerError);
+      return;
+    }
+
+    const { count: answerCount, error: answerError } = await client
+      .from("answers")
+      .select("*", { count: "exact", head: true })
+      .eq("round_number", round);
+
+    if (answerError) {
+      console.error("Answer count error:", answerError);
+      return;
+    }
+
+    document.getElementById("answer-count").innerText =
+      (answerCount ?? 0) + " / " + (playerCount ?? 0) + " answers received";
+  } catch (err) {
+    console.error("Unexpected updateAnswerCount error:", err);
   }
-
-  document.getElementById("answer-count").style.display = "block";
-
-  const round = game.round_number;
-
-  const { count: playerCount } = await client
-    .from("players")
-    .select("*", { count: "exact", head: true });
-
-  const { count: answerCount } = await client
-    .from("answers")
-    .select("*", { count: "exact", head: true })
-    .eq("round_number", round);
-
-  document.getElementById("answer-count").innerText =
-    (answerCount ?? 0) + " / " + (playerCount ?? 0) + " answers received";
 }
 
 // ===============================
@@ -280,27 +454,259 @@ async function updateAnswerCount() {
 // ===============================
 
 async function showLeaderboard() {
-  const { data } = await client
-    .from("winners")
-    .select("*")
-    .order("round_number", { ascending: true });
+  try {
+    const { data, error } = await client
+      .from("winners")
+      .select("*")
+      .order("round_number", { ascending: true });
 
-  const list = document.getElementById("leaderboard-list");
-  list.innerHTML = "";
+    if (error) {
+      console.error("Leaderboard error:", error);
+      alert("Failed to load leaderboard.");
+      return;
+    }
 
-  data.forEach((winner) => {
-    const row = document.createElement("p");
+    const list = document.getElementById("leaderboard-list");
+    list.innerHTML = "";
 
-    row.innerText =
-      "Round " +
-      winner.round_number +
-      " — Table " +
-      winner.table_no +
-      " — " +
-      winner.player_name;
+    (data || []).forEach((winner) => {
+      const row = document.createElement("p");
+      row.innerText =
+        "Round " +
+        winner.round_number +
+        " — Table " +
+        winner.table_no +
+        " — " +
+        winner.player_name;
+      list.appendChild(row);
+    });
 
-    list.appendChild(row);
-  });
+    document.getElementById("leaderboard-card").style.display = "block";
+  } catch (err) {
+    console.error("Unexpected leaderboard error:", err);
+  }
+}
 
-  document.getElementById("leaderboard-card").style.display = "block";
+// ===============================
+// LOAD WINNER FOR ROUND
+// ===============================
+
+async function loadWinnerForRound(round) {
+  try {
+    const { data, error } = await client
+      .from("winners")
+      .select("*")
+      .eq("round_number", round)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Load winner error:", error);
+      return;
+    }
+
+    if (!data) {
+      return;
+    }
+
+    document.getElementById("winner-card").style.display = "block";
+    document.getElementById("winner-answer").innerText = `"${data.answer}"`;
+    document.getElementById("winner-player").innerText =
+      `— ${data.player_name}`;
+    document.getElementById("winner-reason").innerText =
+      "🤖 AI Judge: Reason shown live only.";
+  } catch (err) {
+    console.error("Unexpected loadWinnerForRound error:", err);
+  }
+}
+
+// ===============================
+// EVALUATE ANSWERS
+// ===============================
+
+async function evaluateAnswers() {
+  console.log("Evaluating answers with AI...");
+
+  try {
+    const { data: game, error: gameError } = await client
+      .from("game_state")
+      .select("round_number, scenario, phase")
+      .eq("id", 1)
+      .single();
+
+    if (gameError || !game) {
+      console.error("Failed to load game state:", gameError);
+      alert("Failed to load game state.");
+      return null;
+    }
+
+    const round = game.round_number;
+
+    const { data, error: answersError } = await client
+      .from("answers")
+      .select("name, answer")
+      .eq("round_number", round)
+      .order("id", { ascending: true });
+
+    if (answersError) {
+      console.error("Failed to load answers:", answersError);
+      alert("Failed to load answers.");
+      return null;
+    }
+
+    const answers = (data || [])
+      .map((row) => ({
+        name: row.name?.trim(),
+        answer: row.answer?.trim(),
+      }))
+      .filter((row) => row.name && row.answer)
+      .filter((row) => row.answer !== "{}")
+      .filter((row) => row.answer.length > 5);
+
+    console.log("Current answers:", answers);
+
+    if (answers.length === 0) {
+      alert("No valid answers to judge.");
+      return null;
+    }
+
+    const { error: phaseError } = await client
+      .from("game_state")
+      .update({ phase: "judging" })
+      .eq("id", 1);
+
+    if (phaseError) {
+      console.error("Failed to update phase:", phaseError);
+      alert("Failed to enter judging phase.");
+      return null;
+    }
+
+    const payload = {
+      scenario: game.scenario,
+      answers: answers.map((a) => a.answer),
+    };
+
+    let response;
+    let result;
+
+    try {
+      response = await fetch("/api/test-ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      result = await response.json();
+    } catch (err) {
+      console.error("Failed to call AI:", err);
+      alert("AI failed to judge answers.");
+
+      await client
+        .from("game_state")
+        .update({ phase: "answering" })
+        .eq("id", 1);
+      return null;
+    }
+
+    console.log("AI result:", result);
+
+    const winnerIndex = Number(result?.winner_index);
+
+    if (!response.ok || !Number.isInteger(winnerIndex)) {
+      console.error("AI response invalid:", result);
+      alert("AI failed to judge answers.");
+
+      await client
+        .from("game_state")
+        .update({ phase: "answering" })
+        .eq("id", 1);
+      return null;
+    }
+
+    const winner = answers[winnerIndex];
+
+    if (!winner) {
+      console.error("Winner index invalid:", winnerIndex);
+      alert("AI returned an invalid winner.");
+
+      await client
+        .from("game_state")
+        .update({ phase: "answering" })
+        .eq("id", 1);
+      return null;
+    }
+
+    const { data: player, error: playerError } = await client
+      .from("players")
+      .select("table_no")
+      .eq("name", winner.name)
+      .single();
+
+    if (playerError || !player) {
+      console.error("Failed to load winning player:", playerError);
+      alert("Winner found, but failed to load player details.");
+
+      await client
+        .from("game_state")
+        .update({ phase: "answering" })
+        .eq("id", 1);
+      return null;
+    }
+
+    const { error: winnerSaveError } = await client.from("winners").upsert(
+      [
+        {
+          round_number: round,
+          player_name: winner.name,
+          table_no: player.table_no,
+          answer: winner.answer,
+        },
+      ],
+      { onConflict: "round_number" },
+    );
+
+    if (winnerSaveError) {
+      console.error("Failed to save winner:", winnerSaveError);
+      alert("Winner chosen, but failed to save to database.");
+
+      await client
+        .from("game_state")
+        .update({ phase: "answering" })
+        .eq("id", 1);
+      return null;
+    }
+
+    const { error: resultsPhaseError } = await client
+      .from("game_state")
+      .update({ phase: "results" })
+      .eq("id", 1);
+
+    if (resultsPhaseError) {
+      console.error("Failed to update results phase:", resultsPhaseError);
+      alert("Winner chosen, but failed to update game phase.");
+      return null;
+    }
+
+    document.getElementById("winner-card").style.display = "block";
+    document.getElementById("winner-answer").innerText = `"${winner.answer}"`;
+    document.getElementById("winner-player").innerText = `— ${winner.name}`;
+    document.getElementById("winner-reason").innerText =
+      `🤖 AI Judge: ${result.reason || "No reason provided."}`;
+
+    console.log("Winning player:", winner.name);
+    console.log("Winning answer:", winner.answer);
+    console.log("Winning reason:", result.reason);
+
+    return {
+      scenario: game.scenario,
+      winner_name: winner.name,
+      winner_answer: winner.answer,
+      reason: result.reason || "No reason provided.",
+    };
+  } catch (err) {
+    console.error("Unexpected evaluateAnswers error:", err);
+    alert("Something went wrong during evaluation.");
+    return null;
+  }
 }

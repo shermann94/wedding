@@ -38,11 +38,44 @@ async function loadGame() {
 
   // control scenario visibility
   if (data.phase === "answering") {
+<<<<<<< HEAD
     document.getElementById("scenario-card").style.display = "block";
 
     document.getElementById("scenario").innerText = data.scenario;
   } else {
     document.getElementById("scenario-card").style.display = "none";
+=======
+
+  document.getElementById("lobby").style.display = "none";
+
+  document.getElementById("scenario-card").style.display = "block";
+  document.getElementById("scenario").innerText = data.scenario;
+
+} else {
+
+  document.getElementById("lobby").style.display = "block";
+
+  document.getElementById("scenario-card").style.display = "none";
+}
+
+  //resetting of the button state
+  if (data.phase === "waiting") {
+
+  document.getElementById("start-game-btn").style.display = "inline-block"
+  document.getElementById("evaluate-btn").style.display = "none"
+  document.getElementById("next-round-btn").style.display = "none"
+  document.getElementById("reset-btn").style.display = "none"
+  document.getElementById("winner-card").style.display = "none";
+
+
+  } else if (data.phase === "answering") {
+
+  document.getElementById("start-game-btn").style.display = "none"
+  document.getElementById("evaluate-btn").style.display = "inline-block"
+  document.getElementById("next-round-btn").style.display = "inline-block"
+  document.getElementById("reset-btn").style.display = "inline-block"
+
+>>>>>>> c4a2df5 (initial clean commit)
   }
 }
 
@@ -166,9 +199,26 @@ async function startGame() {
       scenario: scenarioData.scenario,
     })
     .eq("id", 1);
+<<<<<<< HEAD
 }
 
 async function nextRound() {
+=======
+
+  document.getElementById("start-game-btn").style.display = "none";
+  document.getElementById("evaluate-btn").style.display = "inline-block";
+  document.getElementById("next-round-btn").style.display = "inline-block";
+  document.getElementById("reset-btn").style.display = "inline-block";
+
+  document.getElementById("lobby").style.display = "none";
+}
+
+async function nextRound() {
+
+// hide previous winner card
+document.getElementById("winner-card").style.display = "none";
+
+>>>>>>> c4a2df5 (initial clean commit)
   // get current game state
   const { data } = await client
     .from("game_state")
@@ -177,6 +227,13 @@ async function nextRound() {
     .single();
 
   const nextRound = data.round_number + 1;
+<<<<<<< HEAD
+=======
+  if(nextRound > 5){
+  document.getElementById("leaderboard-btn").style.display = "inline-block";
+  return;
+}
+>>>>>>> c4a2df5 (initial clean commit)
 
   // get scenario for next round
   const { data: scenarioData } = await client
@@ -297,6 +354,38 @@ async function evaluateAnswers() {
   const winnerIndex = result.winner_index;
   const winner = answers[winnerIndex];
 
+<<<<<<< HEAD
+=======
+  // get player's table number
+const { data: player } = await client
+  .from("players")
+  .select("table_no")
+  .eq("name", winner.name)
+  .single();
+
+// save winner to database
+await client.from("winners").upsert([
+  {
+    round_number: round,
+    player_name: winner.name,
+    table_no: player.table_no,
+    answer: winner.answer
+  }
+], { onConflict: "round_number" });
+
+  // show winner card
+document.getElementById("winner-card").style.display = "block";
+
+document.getElementById("winner-answer").innerText =
+"\"" + winner.answer + "\"";
+
+document.getElementById("winner-player").innerText =
+"— " + winner.name;
+
+document.getElementById("winner-reason").innerText =
+"🤖 AI Judge: " + result.reason;
+
+>>>>>>> c4a2df5 (initial clean commit)
   if (!winner) {
     console.error("Winner index invalid:", winnerIndex);
     alert("AI returned an invalid winner.");
@@ -332,6 +421,7 @@ async function evaluateAnswers() {
 // RESET GAME
 // ===============================
 
+<<<<<<< HEAD
 async function resetGame() {
   await client
     .from("game_state")
@@ -350,6 +440,52 @@ async function resetGame() {
 
   // reload state
   loadGame();
+=======
+async function resetGame(){
+
+// reset game state
+await client
+.from("game_state")
+.update({
+phase: "waiting",
+round_number: 1,
+scenario: "Waiting for round to start..."
+})
+.eq("id",1)
+
+
+// delete all answers
+await client
+.from("answers")
+.delete()
+.not("id","is",null)
+
+
+// delete all players
+await client
+.from("players")
+.delete()
+.not("id","is",null)
+
+
+// clear bubbles on screen
+document.getElementById("answers").innerHTML = ""
+
+// hide winner card
+document.getElementById("winner-card").style.display = "none"
+
+// ✅ show Start Game button again
+document.getElementById("start-game-btn").style.display = "block"
+
+// hide other buttons
+document.getElementById("evaluate-btn").style.display = "none"
+document.getElementById("next-round-btn").style.display = "none"
+document.getElementById("reset-btn").style.display = "none"
+
+// reload host UI
+loadGame()
+
+>>>>>>> c4a2df5 (initial clean commit)
 }
 
 // ===============================
@@ -363,8 +499,13 @@ function spawnAnswerBubble(text) {
   bubble.innerText = text;
 
   // random position
+<<<<<<< HEAD
   bubble.style.left = Math.random() * 70 + "%";
   bubble.style.top = Math.random() * 60 + "%";
+=======
+bubble.style.left = Math.random() * 90 + "%";
+bubble.style.top = 20 + Math.random() * 70 + "%";
+>>>>>>> c4a2df5 (initial clean commit)
 
   document.getElementById("answers").appendChild(bubble);
 
@@ -413,3 +554,36 @@ async function updateAnswerCount() {
   document.getElementById("answer-count").innerText =
     answers + " / " + players + " answers received";
 }
+<<<<<<< HEAD
+=======
+
+// ===============================
+// Show Leaderboard
+// ===============================
+async function showLeaderboard(){
+
+const { data } = await client
+.from("winners")
+.select("*")
+.order("round_number", { ascending: true });
+
+const list = document.getElementById("leaderboard-list");
+list.innerHTML = "";
+
+data.forEach(winner => {
+
+const row = document.createElement("p");
+
+row.innerText =
+"Round " + winner.round_number +
+" — Table " + winner.table_no +
+" — " + winner.player_name;
+
+list.appendChild(row);
+
+});
+
+document.getElementById("leaderboard-card").style.display = "block";
+
+}
+>>>>>>> c4a2df5 (initial clean commit)

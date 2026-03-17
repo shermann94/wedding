@@ -29,7 +29,11 @@
 
 <!-- LOBBY -->
 
+<<<<<<< HEAD
 <div class="lobby">
+=======
+<div class="lobby" id="lobby">
+>>>>>>> c4a2df5 (initial clean commit)
 
 <h2>Room Code</h2>
 
@@ -53,6 +57,7 @@ Waiting for round to start...
 
 </div>
 
+<<<<<<< HEAD
 
 
 <!-- ANSWERS AREA -->
@@ -60,11 +65,33 @@ Waiting for round to start...
 <div id="answers" class="answers-box"></div>
 
 
+=======
+<div class="scenario-card" id="winner-card" style="display:none;">
+<div class="scenario-card" id="leaderboard-card" style="display:none">
+
+<h2>🏆 Leaderboard</h2>
+
+<div id="leaderboard-list"></div>
+
+</div>    
+
+<h2>🏆 Best Marriage Advice</h2>
+
+<p id="winner-answer"></p>
+
+<p id="winner-player"></p>
+
+<p id="winner-reason"></p>
+
+
+</div>
+>>>>>>> c4a2df5 (initial clean commit)
 
 <!-- HOST CONTROLS -->
 
 <div class="controls">
 
+<<<<<<< HEAD
 <button onclick="startGame()">Start Game</button>
 
 <button onclick="evaluateAnswers()">Evaluate Answers</button>
@@ -72,10 +99,30 @@ Waiting for round to start...
 <button onclick="nextRound()">Next Round</button>
 
 <button onclick="resetGame()">Reset Game</button>
+=======
+<button id="start-game-btn" onclick="startGame()">Start Game</button>
+
+<button id="evaluate-btn" style="display:none" onclick="evaluateAnswers()">Evaluate Answers</button>
+
+<button id="next-round-btn" style="display:none" onclick="nextRound()">Next Round</button>
+
+<button id="leaderboard-btn" onclick="showLeaderboard()" style="display:none">
+Show Leaderboard
+</button>
+
+<button id="reset-btn" style="display:none" onclick="resetGame()">Reset Game</button>
+>>>>>>> c4a2df5 (initial clean commit)
 
 </div>
 
 
+<<<<<<< HEAD
+=======
+<!-- ANSWERS AREA -->
+
+<div id="answers" class="answers-box"></div>
+
+>>>>>>> c4a2df5 (initial clean commit)
 </div>
 
 

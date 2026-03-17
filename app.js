@@ -39,18 +39,42 @@ window.onload = async function () {
   }
 };
 
+<<<<<<< HEAD
 // ======================
 // JOIN GAME
 // ======================
 
+=======
+>>>>>>> c4a2df5 (initial clean commit)
 // ===============================
 // JOIN GAME
 // ===============================
 async function joinGame() {
+<<<<<<< HEAD
   // get values from input fields
   const playerName = document.getElementById("name").value;
   const tableNo = document.getElementById("table").value;
   const roomCode = document.getElementById("roomcode").value;
+=======
+
+  // check if game already started
+  const { data: game } = await client
+    .from("game_state")
+    .select("phase")
+    .eq("id", 1)
+    .single();
+
+  if (game.phase !== "waiting") {
+    document.getElementById("join-error").innerText =
+      "❌ The game has already started.";
+    return;
+  }
+
+  // get values from input fields
+  const playerName = document.getElementById("name").value;
+  const tableNo = document.getElementById("table").value;
+  const roomCode = document.getElementById("roomcode").value.toUpperCase();
+>>>>>>> c4a2df5 (initial clean commit)
 
   // basic validation
   if (!playerName || !tableNo || !roomCode) {
@@ -82,7 +106,12 @@ async function joinGame() {
   // show player identity container
   document.getElementById("player-info").style.display = "block";
 
+<<<<<<< HEAD
   document.getElementById("player-name-display").innerText = "👤 " + playerName;
+=======
+  document.getElementById("player-name-display").innerText =
+    "👤 " + playerName;
+>>>>>>> c4a2df5 (initial clean commit)
 
   document.getElementById("player-table-display").innerText =
     " — Table " + tableNo;
@@ -103,9 +132,15 @@ function showWaiting() {
   document.getElementById("waiting-screen").style.display = "block";
 }
 
+<<<<<<< HEAD
 // ======================
 // LISTEN FOR ROUND START
 // ======================
+=======
+// ==================================
+// LISTEN FOR ROUND START - Listener
+// ==================================
+>>>>>>> c4a2df5 (initial clean commit)
 
 client
   .channel("game_state_updates")
@@ -117,12 +152,34 @@ client
       table: "game_state",
     },
     (payload) => {
+<<<<<<< HEAD
       if (
         localStorage.getItem("joined") === "true" &&
         payload.new.phase === "answering"
       ) {
         showAnswerScreen();
       }
+=======
+
+      const phase = payload.new.phase;
+
+      // 🔁 detect reset from host
+      if (phase === "waiting") {
+        localStorage.clear();
+        location.reload();
+        return;
+      }
+
+      // ▶ round started
+      if (
+        localStorage.getItem("joined") === "true" &&
+        phase === "answering"
+      ) {
+        localStorage.removeItem("submitted");
+        showAnswerScreen();
+      }
+
+>>>>>>> c4a2df5 (initial clean commit)
     },
   )
   .subscribe();
@@ -135,9 +192,20 @@ async function showAnswerScreen() {
   // hide other screens
   document.getElementById("join-screen").style.display = "none";
   document.getElementById("waiting-screen").style.display = "none";
+<<<<<<< HEAD
 
   // check if player already submitted
   if (localStorage.getItem("submitted") === "true") {
+=======
+  document.getElementById("submitted-screen").style.display = "none";
+
+  // clear previous answer input
+  document.getElementById("answer").value = "";
+
+  // check if player already submitted
+  if (localStorage.getItem("submitted") === "true") {
+    document.getElementById("answer-screen").style.display = "none";
+>>>>>>> c4a2df5 (initial clean commit)
     document.getElementById("submitted-screen").style.display = "block";
 
     return;
@@ -199,8 +267,19 @@ async function submitAdvice() {
     return;
   }
 
+<<<<<<< HEAD
   // clear input
   document.getElementById("answer").value = "";
+=======
+  // ✅ mark submission locally
+  localStorage.setItem("submitted", "true");
+
+  // hide answer screen
+  document.getElementById("answer-screen").style.display = "none";
+
+  // show submitted screen
+  document.getElementById("submitted-screen").style.display = "block";
+>>>>>>> c4a2df5 (initial clean commit)
 }
 
 // ======================

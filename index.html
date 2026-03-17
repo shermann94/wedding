@@ -4,7 +4,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Marriage Advice Game</title>
+<<<<<<< HEAD
 
+=======
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+>>>>>>> c4a2df5 (initial clean commit)
     <link rel="stylesheet" href="style.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -16,6 +20,7 @@
     <!-- ========================= -->
 
     <div id="join-screen" class="container">
+<<<<<<< HEAD
       <h1 class="title">💍 Marriage Advice Game</h1>
 
       <div class="scenario-box">
@@ -37,6 +42,44 @@
 
       <p id="join-error"></p>
     </div>
+=======
+
+    <img src="assets/gamelogo.png" class="game-logo" alt="Marriage Advice Game">
+
+<!--
+    
+<div class="scenario-box">
+    <p>Enter the room to give your best marriage advice!</p>
+  </div>
+
+-->
+  
+
+  <!-- NEW CARD -->
+  <div class="join-card">
+
+    <h3 class="join-title">
+    Enter the room to give your best marriage advice!
+    </h3>
+    <input id="name" class="input" placeholder="Your name" />
+
+    <input id="table" type="number"inputmode="numeric" min="1" step="1" max="23" class="input" placeholder="Table number" />
+
+    <input
+      id="roomcode"
+      class="input"
+      placeholder="ROOM CODE"
+      style="text-transform: uppercase"
+    />
+
+    <button class="submit-btn" onclick="joinGame()">Join Game</button>
+
+  </div>
+
+  <p id="join-error"></p>
+
+</div>
+>>>>>>> c4a2df5 (initial clean commit)
 
     <!-- ========================= -->
     <!-- WAITING ROOM -->

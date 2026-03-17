@@ -43,6 +43,7 @@ async function loadGame() {
   }
 }
 
+// Run this function when the page loads
 loadGame();
 
 // ===============================
@@ -136,7 +137,7 @@ client
   .subscribe();
 
 // ===============================
-// GAME STATE LISTENER
+// REALTIME GAME STATE FEED
 // ===============================
 
 client
@@ -167,14 +168,20 @@ client
   .subscribe();
 
 // ===============================
-// ANSWER FEED
+// REALTIME ANSWER FEED
 // ===============================
+
+console.log("Listening for answers...");
 
 client
   .channel("answers-channel")
   .on(
     "postgres_changes",
-    { event: "INSERT", schema: "public", table: "answers" },
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "answers",
+    },
     async (payload) => {
       try {
         const answer = payload.new.answer;
@@ -205,7 +212,7 @@ client
   .subscribe();
 
 // ===============================
-// HOST CONTROLS
+// HOST CONTROL FUNCTIONS
 // ===============================
 
 async function startGame() {
@@ -377,16 +384,17 @@ async function resetGame() {
 }
 
 // ===============================
-// BUBBLES
+// Spawn bubbles
 // ===============================
 
 function spawnAnswerBubble(text) {
   const bubble = document.createElement("div");
   bubble.className = "answer-item";
+
   bubble.innerText = text;
 
-  bubble.style.left = Math.random() * 90 + "%";
-  bubble.style.top = 20 + Math.random() * 70 + "%";
+  bubble.style.left = Math.random() * 70 + "%";
+  bubble.style.top = Math.random() * 60 + "%";
 
   document.getElementById("answers").appendChild(bubble);
 
@@ -398,7 +406,7 @@ function spawnAnswerBubble(text) {
 }
 
 // ===============================
-// ANSWER COUNT
+// UPDATE ANSWER COUNT
 // ===============================
 
 async function updateAnswerCount() {
@@ -654,17 +662,14 @@ async function evaluateAnswers() {
       return null;
     }
 
-    const { error: winnerSaveError } = await client.from("winners").upsert(
-      [
-        {
-          round_number: round,
-          player_name: winner.name,
-          table_no: player.table_no,
-          answer: winner.answer,
-        },
-      ],
-      { onConflict: "round_number" },
-    );
+    const { error: winnerSaveError } = await client.from("winners").insert([
+      {
+        round_number: round,
+        player_name: winner.name,
+        table_no: player.table_no,
+        answer: winner.answer,
+      },
+    ]);
 
     if (winnerSaveError) {
       console.error("Failed to save winner:", winnerSaveError);

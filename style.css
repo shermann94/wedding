@@ -2,45 +2,20 @@
 /* GLOBAL PAGE STYLE */
 /* ================================================= */
 
-/* Style applied to the entire page */
 body{
 
-<<<<<<< HEAD
-=======
-  
-
->>>>>>> c4a2df5 (initial clean commit)
-/* remove browser default margins */
 margin:0;
 
-/* use a clean readable font */
-<<<<<<< HEAD
-font-family:'Arial', sans-serif;
-
-/* pastel gradient background for wedding vibe */
-background:linear-gradient(135deg,#ffd6e7,#e6d8ff);
-
-/* center content horizontally */
-display:flex;
-justify-content:center;
-
-/* center content vertically */
-align-items:center;
-=======
 font-family: 'Fredoka', sans-serif;
 
 background-image: url("assets/wedding-bg.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+background-attachment: fixed;
 
->>>>>>> c4a2df5 (initial clean commit)
-
-/* ensure full screen height */
 min-height:100vh;
 
-/* base text color */
 color:#444;
 
 }
@@ -48,566 +23,300 @@ color:#444;
 
 
 /* ================================================= */
-/* PLAYER PAGE LAYOUT (PHONE UI) */
+/* PLAYER PAGE LAYOUT */
 /* ================================================= */
 
-/* container used on the player page */
 .container{
 
-<<<<<<< HEAD
-/* responsive width */
-width:90%;
+width:100%;
+max-width:700px;
 
-/* prevent container from becoming too wide */
-max-width:420px;
+margin:0 auto;
 
-/* center text inside container */
+padding-left:24px;
+padding-right:24px;
+padding-top: 40px;
+
 text-align:center;
-=======
-    width:100%;
-  max-width:700px;
-
-  margin:0 auto;   /* ✅ THIS centers properly */
-
-  padding-left:24px;
-  padding-right:24px;
-    padding-top: 40px;
-
-
-  text-align:center;
-  box-sizing: border-box;
->>>>>>> c4a2df5 (initial clean commit)
+box-sizing: border-box;
 
 }
 
 
 
-/* page title on player screen */
+/* TITLE */
+
 .title{
-
-/* larger text for emphasis */
 font-size:28px;
-
-/* space below title */
 margin-bottom:20px;
-
-/* pastel purple tone */
 color:#7a6ea9;
-
 }
 
 
 
-/* card containing scenario or messages */
+/* SCENARIO BOX */
+
 .scenario-box{
 
-/* white card background */
 background:#ffffff;
-
-/* internal padding */
 padding:20px;
-
-/* rounded corners */
 border-radius:16px;
-
-/* space below box */
 margin-bottom:20px;
-
-/* readable font size */
 font-size:18px;
-
-/* spacing between lines */
 line-height:1.4;
-
-/* soft shadow for depth */
 box-shadow:0 8px 20px rgba(0,0,0,0.08);
-
-<<<<<<< HEAD
-=======
 width: 100%;
 
->>>>>>> c4a2df5 (initial clean commit)
 }
 
 
 
-/* input fields (name / table / room code) */
+/* INPUT */
+
 .input{
 
-<<<<<<< HEAD
-/* full width inputs */
 width:100%;
-
-/* internal spacing */
-padding:14px;
-
-/* space between inputs */
+padding:14px 16px;
 margin-bottom:15px;
 
-/* remove default borders */
 border:none;
+border-radius:16px;
 
-/* rounded corners */
-border-radius:12px;
+font-size:18px;
+font-weight: 500;
+font-family: 'Fredoka', sans-serif;
 
-/* comfortable text size */
-font-size:16px;
-
-/* ensure padding doesn't break layout */
 box-sizing:border-box;
 
-/* light pastel background */
-background:#f6f3ff;
+background:#ffffff;
 
-}
+box-shadow:
+0 4px 0 #e5e5e5,
+0 6px 12px rgba(0,0,0,0.08);
 
-=======
-width:100%;
-
-  padding:14px 16px;
-
-  margin-bottom:15px;
-
-  border:none;
-
-  border-radius:16px;
-
-  font-size:18px;
-
-  font-weight: 500;
-  font-family: 'Fredoka', sans-serif;
-
-  box-sizing:border-box;
-
-  background:#ffffff;   /* ✅ pure white */
-
-  box-shadow:
-    0 4px 0 #e5e5e5,   /* subtle “lift” like Nintendo */
-    0 6px 12px rgba(0,0,0,0.08);
-
-  transition: all 0.2s ease;
+transition: all 0.2s ease;
 
 }
 
 .input:focus{
-  outline: none;
-  background-color: #ffffff;  /* keep white */
+outline: none;
+transform: translateY(-2px);
 
-  transform: translateY(-2px);
+box-shadow:
+0 10px 18px rgba(0,0,0,0.15);
 
-  box-shadow:
-    0 10px 18px rgba(0,0,0,0.15);
+border: 2px solid transparent;
 
-  border: 2px solid transparent;
+background-image:
+linear-gradient(white, white),
+linear-gradient(135deg, #ff2f6d, #ff4d8d);
 
-  background-image:
-    linear-gradient(white, white),
-    linear-gradient(135deg, #ff2f6d, #ff4d8d);
-
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+background-origin: border-box;
+background-clip: padding-box, border-box;
 }
 
 .input::placeholder{
 font-family: 'Fredoka', sans-serif;
-  font-size:18px;
-  font-weight:500;
-
-  color:#6b6b6b;; 
+font-size:18px;
+font-weight:500;
+color:#6b6b6b;
 }
->>>>>>> c4a2df5 (initial clean commit)
 
 
-/* textarea specifically */
+
+/* TEXTAREA */
+
 textarea{
-
-/* fixed height */
 height:120px;
-
-/* prevent resizing */
 resize:none;
-
 }
 
 
 
-/* submit button styling */
+/* BUTTON */
+
 .submit-btn{
 
-/* full width button */
 width:100%;
-
-/* large padding for touch devices */
 padding:16px;
 
-/* bigger text */
 font-size:18px;
-
-/* bold text */
 font-weight:bold;
-<<<<<<< HEAD
-
-=======
 font-family: inherit;
->>>>>>> c4a2df5 (initial clean commit)
-/* remove borders */
-border:none;
 
-/* rounded shape */
+border:none;
 border-radius:14px;
 
-/* pink pastel button */
 background:#ffb6c1;
-
-/* white text */
 color:white;
 
-/* pointer cursor */
 cursor:pointer;
 
-/* soft button shadow */
 box-shadow:0 6px 14px rgba(0,0,0,0.08);
 
 }
 
-
-
-/* button hover effect */
 .submit-btn:hover{
-
-/* slightly darker pink */
 background:#ffa3b1;
-
 }
 
-
-
-/* button click animation */
 .submit-btn:active{
-
-/* shrink slightly when pressed */
 transform:scale(0.97);
-
 }
 
 
 
-/* small helper text */
+/* HINT */
+
 .hint{
-
-/* spacing above hint */
 margin-top:15px;
-
-/* smaller font */
 font-size:14px;
-
-/* muted grey */
 color:#777;
-
-}
-
-<<<<<<< HEAD
-=======
-.scenario-box,
-.join-card {
-
-    width: 100%;
-
-  padding: 24px;
-
-  border-radius: 20px;
-
-  margin-top: 0;
-
-  box-sizing: border-box;
-
 }
 
 
->>>>>>> c4a2df5 (initial clean commit)
-
 
 /* ================================================= */
-/* BIG SCREEN GAME UI */
+/* GAME SCREEN */
 /* ================================================= */
 
-/* container used on game.html (big screen) */
 .game-container{
-
-/* stack elements vertically */
 display:flex;
 flex-direction:column;
-
-/* center horizontally */
 align-items:center;
-
-/* align content near top */
 justify-content:flex-start;
 
-/* large spacing for projector readability */
 padding:60px;
-
-/* space between sections */
 gap:40px;
-
-/* full width */
 width:100%;
-
 }
 
-
-
-/* large game title */
 .game-title{
-
-/* very large text */
 font-size:64px;
-
-/* bold title */
 font-weight:bold;
-
-/* purple tone */
 color:#6b5c8a;
-
-/* center title */
 text-align:center;
-
 }
 
 
 
-/* ================================================= */
-/* LOBBY (ROOM CODE + PLAYER COUNT) */
-/* ================================================= */
+/* LOBBY */
 
-/* lobby section */
 .lobby{
-
-/* center everything */
 text-align:center;
-
-/* space below lobby */
 margin-bottom:30px;
-
 }
 
-
-
-/* room code displayed on big screen */
 #room-code{
-
-/* extremely large font */
 font-size:72px;
-
-/* bold text */
 font-weight:bold;
-
-/* pink highlight color */
 color:#ff7aa2;
-
-/* vertical spacing */
 margin:10px 0;
-
 }
 
-
-
-/* player count text */
 #player-count{
-
-/* large readable size */
 font-size:30px;
-
-/* neutral grey */
 color:#555;
-
 }
 
 
 
-/* ================================================= */
 /* SCENARIO CARD */
-/* ================================================= */
 
-/* scenario card container */
 .scenario-card{
 
-/* white card */
 background:white;
-
-/* large padding */
 padding:40px;
-
-/* rounded edges */
 border-radius:24px;
 
-/* large shadow */
 box-shadow:0 12px 30px rgba(0,0,0,0.12);
 
-/* max width for readability */
 max-width:1100px;
-
-/* responsive width */
 width:90%;
 
-/* center text */
 text-align:center;
 
-<<<<<<< HEAD
-=======
 margin-bottom: 10px;
+z-index: 1;
+position: relative;
 
- z-index: 1;
-
- position: relative;
-
->>>>>>> c4a2df5 (initial clean commit)
 }
 
-
-
-/* scenario text */
 .scenario-card h2{
-
-/* large readable size */
 font-size:42px;
-
-/* remove margin */
 margin:0;
-
-/* spacing between lines */
 line-height:1.4;
-
 }
 
 
 
-/* ================================================= */
-/* FLOATING ANSWER BUBBLES */
-/* ================================================= */
+/* ANSWERS FLOAT */
 
-/* container where bubbles float */
-<<<<<<< HEAD
-.answers-box{
-
-/* allow absolute positioning inside */
-position:relative;
-
-/* large width for big screen */
-width:1100px;
-
-/* responsive width */
-max-width:90%;
-
-/* height where bubbles float */
-height:420px;
-
-/* hide bubbles when leaving container */
-overflow:hidden;
-
-=======
 .answers-box {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-  z-index: 50;
->>>>>>> c4a2df5 (initial clean commit)
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+overflow: visible;
+pointer-events: none;
+z-index: 50;
 }
 
-
-
-/* individual speech bubble */
 .answer-item{
 
-<<<<<<< HEAD
-=======
-/* position*/
-z-index: 1000;
-    
->>>>>>> c4a2df5 (initial clean commit)
-/* absolute so bubbles can float */
 position:absolute;
 
-/* white bubble */
 background:white;
-
-/* internal spacing */
 padding:18px 24px;
-
-/* rounded bubble shape */
 border-radius:20px;
 
-/* readable font */
 font-size:26px;
-
-/* limit width so text wraps nicely */
 max-width:420px;
 
-/* allow long text wrapping */
 word-wrap:break-word;
 white-space:normal;
 
-/* soft bubble shadow */
 box-shadow:0 8px 18px rgba(0,0,0,0.12);
 
-/* start invisible */
 opacity:0;
 
-/* floating animation */
 animation:floatBubble 4s ease forwards;
+
+z-index: 1000;
 
 }
 
-
-
-/* speech bubble tail */
 .answer-item::after{
-
 content:"";
-
-/* attach tail to bubble */
 position:absolute;
-
 left:20px;
 bottom:-12px;
 
-/* triangle tail shape */
 border-left:12px solid transparent;
 border-right:12px solid transparent;
 border-top:12px solid white;
-
 }
 
 
 
-/* ================================================= */
-/* FLOATING ANIMATION */
-/* ================================================= */
+/* FLOAT ANIMATION */
 
-/* animation used by bubbles */
 @keyframes floatBubble{
 
-/* start slightly below */
 0%{
 opacity:0;
 transform:translateY(40px) scale(0.9);
 }
 
-/* fade in */
 10%{
 opacity:1;
 }
 
-/* remain visible */
 80%{
 opacity:1;
 }
 
-/* float upward and fade */
 100%{
 opacity:0;
 transform:translateY(-240px) scale(1);
@@ -617,78 +326,42 @@ transform:translateY(-240px) scale(1);
 
 
 
-/* ================================================= */
-/* HOST CONTROLS */
-/* ================================================= */
+/* CONTROLS */
 
-/* container holding control buttons */
 .controls{
-
-<<<<<<< HEAD
-/* horizontal layout */
-display:flex;
-
-/* spacing between buttons */
-gap:20px;
-
-/* space above controls */
-margin-top:20px;
-=======
 z-index: 1;
 margin-bottom: 20px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
->>>>>>> c4a2df5 (initial clean commit)
 
+display: flex;
+justify-content: center;
+gap: 10px;
 }
 
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> c4a2df5 (initial clean commit)
-/* host buttons */
 .controls button{
 
-/* padding for readability */
 padding:16px 32px;
-
-/* large font */
 font-size:20px;
 
-/* remove borders */
 border:none;
-
-/* rounded shape */
 border-radius:14px;
 
-/* pink button color */
 background:#ffb6c1;
-
-/* white text */
 color:white;
 
-/* clickable cursor */
 cursor:pointer;
 
-/* subtle shadow */
 box-shadow:0 6px 14px rgba(0,0,0,0.1);
 
 }
 
-
-
-/* hover state */
 .controls button:hover{
-
-/* darker pink */
 background:#ffa3b1;
-
 }
 
-/* Player Details */
+
+
+/* PLAYER INFO */
+
 .player-info{
 background:#ffffff;
 padding:10px 20px;
@@ -697,11 +370,11 @@ margin-bottom:15px;
 font-weight:600;
 display:inline-block;
 }
-<<<<<<< HEAD
-=======
 
 
-/*Submit Details*/
+
+/* SUBMITTED */
+
 #submitted-screen p{
 font-size: 28px;
 font-weight: bold;
@@ -711,193 +384,134 @@ font-weight: bold;
 font-size: 40px;
 }
 
-#winner-card {
-  animation: popIn 0.6s ease;
-}
 
 
-
-#winner-reason {
-  margin-top: 10px;
-  font-style: italic;
-  opacity: 0.85;
-}
-
-/* ============================= */
 /* JOIN CARD */
-/* ============================= */
 
 .join-card {
 
-    width: 100%;
+width: 100%;
+margin: 20px 0;
 
-  margin: 20px 0;
+padding: 24px;
+border-radius: 24px;
 
-  padding: 24px;
+display: flex;
+flex-direction: column;
+gap: 18px;
 
-  border-radius: 24px;
-
-  display: flex;
-  flex-direction: column;
-    position:relative;
+position:relative;
 overflow: hidden;
-  gap: 18px;
 
-  /* Nintendo style light card */
-  background: linear-gradient(
-    145deg,
-    #ffffff,
-    #f4f4f4
-  );
+background: linear-gradient(145deg, #ffffff, #f4f4f4);
 
-  border: 1px solid rgba(0,0,0,0.05);
+border: 1px solid rgba(0,0,0,0.05);
 
-  box-shadow:
-    0 6px 0 #e6e6e6,           /* “lift” effect */
-    0 12px 25px rgba(0,0,0,0.12);
+box-shadow:
+0 6px 0 #e6e6e6,
+0 12px 25px rgba(0,0,0,0.12);
 }
 
 .join-card::before{
-  content:"";
+content:"";
+position:absolute;
 
-  position:absolute;
+top:0;
+left:0;
+right:0;
 
-  top:0;
-  left:0;
-  right:0;
+height:4px;
+
+background: linear-gradient(
+90deg,
+#ff7aa8,
+#ffd166,
+#6ee7ff
+);
+
 opacity:0.85;
-  height:4px;
-
-  background: linear-gradient(
-    90deg,
-    #ff7aa8,
-    #ffd166,
-    #6ee7ff
-  );
-box-shadow: 0 1px 2px rgba(255,255,255,0.4);
-}
-/* ============================= */
-/* INPUT FIELDS */
-/* ============================= */
-
-.join-card .input {
-
-   width: 100%;
-
-  padding: 14px;
-
-  border-radius: 12px;
-
-  box-sizing: border-box;
 }
 
-/* ============================= */
-/* BUTTON */
-/* ============================= */
+
+
+/* JOIN BUTTON */
 
 .join-card .submit-btn {
 
-  background: linear-gradient(
-    135deg,
-    #ff2f6d,   /* vibrant dragon fruit */
-    #ff4d8d
-  );
+background: linear-gradient(135deg, #ff2f6d, #ff4d8d);
 
-  color: white;
+color: white;
 
-  border: none;
+border: none;
+border-radius: 16px;
 
-  border-radius: 16px;
+padding: 16px;
 
-  padding: 16px;
+font-size: 18px;
+font-weight: 600;
 
-  font-size: 18px;
+cursor: pointer;
 
-  font-weight: 600;
-    letter-spacing: 0.5px;
+box-shadow:
+0 5px 0 #c2185b,
+0 10px 20px rgba(0,0,0,0.2);
 
-
-  cursor: pointer;
-
-  width: 100%;
-
-  box-shadow:
-    0 5px 0 #c2185b,   /* depth */
-    0 10px 20px rgba(0,0,0,0.2);
-
-  transition: all 0.15s ease;
+transition: all 0.15s ease;
 }
 
 .join-card .submit-btn:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 7px 0 #c2185b,
-    0 14px 25px rgba(0,0,0,0.25);
+transform: translateY(-2px);
 }
 
 .join-card .submit-btn:active {
-  transform: translateY(3px);
-
-  box-shadow:
-    0 2px 0 #c2185b,
-    0 6px 12px rgba(0,0,0,0.2);
+transform: translateY(3px);
 }
+
+
+
+/* TITLE */
 
 .join-title{
 
-  font-family: 'Fredoka', sans-serif;
+font-family: 'Fredoka', sans-serif;
+font-size:20px;
+font-weight:600;
 
-  font-size:20px;
+color:#444;
+line-height:1.4;
 
-  font-weight:600;   /* not too heavy */
-
-  color:#444;        /* strong contrast */
-
-  line-height:1.4;
-
-  text-align:center;
-
-  margin-bottom:10px;
+text-align:center;
+margin-bottom:10px;
 
 }
+
+
+
+/* LOGO */
 
 .game-logo{
 
-  width:420px;
+width:420px;
+max-width:90%;
 
-  max-width:90%;
 margin-top: 30px;
 
-  display:block;
+display:block;
+margin-left:auto;
+margin-right:auto;
 
-  margin-left:auto;
-  margin-right:auto;
+filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
 
-  filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
+animation: floatLogo 4s ease-in-out infinite;
 
-  animation: floatLogo 4s ease-in-out infinite;
 }
-
-/* floating animation */
 
 @keyframes floatLogo{
 
-  0%{
-    transform: translateY(0px);
-  }
+0%{ transform: translateY(0px); }
 
-  50%{
-    transform: translateY(-12px);
-  }
+50%{ transform: translateY(-12px); }
 
-  100%{
-    transform: translateY(0px);
-  }
+100%{ transform: translateY(0px); }
 
 }
-
-.game-logo{
-  filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
-}
->>>>>>> c4a2df5 (initial clean commit)

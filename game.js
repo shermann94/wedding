@@ -286,6 +286,15 @@ async function evaluateAnswers() {
   const winnerIndex = result.winner_index;
   const winner = answers[winnerIndex];
 
+  // show winner card
+  document.getElementById("winner-card").style.display = "block";
+
+  document.getElementById("winner-answer").innerText =
+  "\"" + winner.answer + "\"";
+
+  document.getElementById("winner-player").innerText =
+  "— " + winner.name;
+
   if (!winner) {
     console.error("Winner index invalid:", winnerIndex);
     alert("AI returned an invalid winner.");

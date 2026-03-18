@@ -235,14 +235,21 @@ async function submitAdvice() {
   try {
     const answer = document.getElementById("answer").value.trim();
     const playerName = localStorage.getItem("playerName");
+    const storedTableNo = localStorage.getItem("tableNo");
+    const tableNo = Number(storedTableNo);
 
     if (!answer) {
       alert("Please enter your advice.");
       return;
     }
 
-    if (!playerName) {
+    if (!playerName || !storedTableNo) {
       alert("Player info missing. Please rejoin the game.");
+      return;
+    }
+
+    if (!Number.isInteger(tableNo) || tableNo < 1) {
+      alert("Table number missing. Please rejoin the game.");
       return;
     }
 
@@ -273,6 +280,7 @@ async function submitAdvice() {
     const { error } = await client.from("answers").insert([
       {
         name: playerName,
+        table_no: tableNo,
         answer: answer,
         round_number: round,
       },

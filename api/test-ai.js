@@ -25,17 +25,44 @@ function buildPrompt(scenario, answers) {
     .join("\n");
 
   return `
-Pick the funniest wedding-safe answer.
+You are a witty wedding emcee judging a party game.
+
+Pick exactly ONE winner.
 
 Rules:
-- Choose exactly one winner.
-- winner_index must be a valid integer index from the answers list.
-- reason must be short.
-- Return only JSON.
-- Do not use markdown or code fences.
+- If at least one answer is understandable, NEVER pick gibberish.
+- Only pick gibberish if ALL answers are gibberish.
 
-Return JSON:
-{ "winner_index": number, "reason": "short reason" }
+Judge by:
+1. Clear and understandable
+2. Relevant to the scenario
+3. Amusing or interesting
+
+Guidelines:
+- A weak real answer beats any nonsense
+- Do NOT claim gibberish is good or meaningful
+- Do NOT repeat the answer in your reason
+
+Output JSON:
+{ "winner_index": number, "reason": string }
+
+Reason rules:
+- 6–12 words
+- Casual, light, wedding-appropriate tone
+
+If winner is REAL:
+- Give a short meaningful reason
+
+If winner is GIBBERISH:
+- Pick ONE from this list exactly:
+  1. "I’m not entirely sure what that was, but okay"
+  2. "Well… that was something unexpected, I guess"
+  3. "I have questions, but we’ll just go with it"
+  4. "Not sure what I heard, but it made me pause"
+  5. "That was confusing, but oddly memorable"
+
+Return only valid JSON:
+{ "winner_index": number, "reason": "short host-style line" }
 
 Scenario:
 ${scenario}

@@ -5,6 +5,28 @@ const supabaseKey =
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ===============================
+// HELPERS
+// ===============================
+
+function normalizeText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function getPlayerKey(name, tableNo) {
+  return `${normalizeText(name)}::${tableNo}`;
+}
+
+function showNoWinnerCard() {
+  document.getElementById("winner-card").style.display = "block";
+  document.getElementById("winner-answer").innerText = "";
+  document.getElementById("winner-player").innerText = "";
+  document.getElementById("winner-reason").innerText =
+    "There are no eligible winners this round.";
+}
+
+// ===============================
 // LOAD GAME
 // ===============================
 
@@ -519,9 +541,9 @@ async function loadWinnerForRound(round) {
     document.getElementById("winner-card").style.display = "block";
     document.getElementById("winner-answer").innerText = `"${data.answer}"`;
     document.getElementById("winner-player").innerText =
-      `— ${data.player_name}`;
+      `— ${data.player_name} (Table ${data.table_no})`;
     document.getElementById("winner-reason").innerText =
-      "🤖 AI Judge: Reason shown live only.";
+      `🤖 AI Judge: ${data.reason || "No reason provided."}`;
   } catch (err) {
     console.error("Unexpected loadWinnerForRound error:", err);
   }
@@ -549,9 +571,9 @@ async function evaluateAnswers() {
 
     const round = game.round_number;
 
-    const { data, error: answersError } = await client
+    const { data: answerRows, error: answersError } = await client
       .from("answers")
-      .select("name, answer")
+      .select("name, answer, table_no")
       .eq("round_number", round)
       .order("id", { ascending: true });
 
@@ -561,20 +583,59 @@ async function evaluateAnswers() {
       return null;
     }
 
-    const answers = (data || [])
+    const allAnswers = (answerRows || [])
       .map((row) => ({
         name: row.name?.trim(),
         answer: row.answer?.trim(),
+        table_no: row.table_no,
       }))
-      .filter((row) => row.name && row.answer)
+      .filter((row) => row.name && row.answer && row.table_no != null)
       .filter((row) => row.answer !== "{}")
       .filter((row) => row.answer.length > 5);
 
-    console.log("Current answers:", answers);
+    console.log("Current answers:", allAnswers);
 
-    if (answers.length === 0) {
+    if (allAnswers.length === 0) {
       alert("No valid answers to judge.");
       return null;
+    }
+
+    let answersForAI = allAnswers;
+
+    const { data: winnerRows, error: winnersError } = await client
+      .from("winners")
+      .select("player_name, table_no");
+
+    if (!winnersError && Array.isArray(winnerRows)) {
+      const previousWinnerKeys = new Set(
+        winnerRows.map((row) => getPlayerKey(row.player_name, row.table_no)),
+      );
+
+      const eligibleAnswers = allAnswers.filter(
+        (row) => !previousWinnerKeys.has(getPlayerKey(row.name, row.table_no)),
+      );
+
+      console.log("Eligible answers:", eligibleAnswers);
+      answersForAI = eligibleAnswers;
+    } else if (winnersError) {
+      console.error("Failed to load previous winners:", winnersError);
+    }
+
+    if (answersForAI.length === 0) {
+      const { error: resultsPhaseError } = await client
+        .from("game_state")
+        .update({ phase: "results" })
+        .eq("id", 1);
+
+      if (resultsPhaseError) {
+        console.error("Failed to update results phase:", resultsPhaseError);
+        alert("No eligible winner found, but failed to update game phase.");
+        return null;
+      }
+
+      showNoWinnerCard();
+
+      return;
     }
 
     const { error: phaseError } = await client
@@ -590,7 +651,7 @@ async function evaluateAnswers() {
 
     const payload = {
       scenario: game.scenario,
-      answers: answers.map((a) => a.answer),
+      answers: answersForAI.map((a) => a.answer),
     };
 
     let response;
@@ -614,6 +675,7 @@ async function evaluateAnswers() {
         .from("game_state")
         .update({ phase: "answering" })
         .eq("id", 1);
+
       return null;
     }
 
@@ -629,10 +691,11 @@ async function evaluateAnswers() {
         .from("game_state")
         .update({ phase: "answering" })
         .eq("id", 1);
+
       return null;
     }
 
-    const winner = answers[winnerIndex];
+    const winner = answersForAI[winnerIndex];
 
     if (!winner) {
       console.error("Winner index invalid:", winnerIndex);
@@ -642,23 +705,7 @@ async function evaluateAnswers() {
         .from("game_state")
         .update({ phase: "answering" })
         .eq("id", 1);
-      return null;
-    }
 
-    const { data: player, error: playerError } = await client
-      .from("players")
-      .select("table_no")
-      .eq("name", winner.name)
-      .single();
-
-    if (playerError || !player) {
-      console.error("Failed to load winning player:", playerError);
-      alert("Winner found, but failed to load player details.");
-
-      await client
-        .from("game_state")
-        .update({ phase: "answering" })
-        .eq("id", 1);
       return null;
     }
 
@@ -666,8 +713,9 @@ async function evaluateAnswers() {
       {
         round_number: round,
         player_name: winner.name,
-        table_no: player.table_no,
+        table_no: winner.table_no,
         answer: winner.answer,
+        reason: result.reason || "No reason provided.",
       },
     ]);
 
@@ -679,6 +727,7 @@ async function evaluateAnswers() {
         .from("game_state")
         .update({ phase: "answering" })
         .eq("id", 1);
+
       return null;
     }
 
@@ -693,22 +742,14 @@ async function evaluateAnswers() {
       return null;
     }
 
-    document.getElementById("winner-card").style.display = "block";
-    document.getElementById("winner-answer").innerText = `"${winner.answer}"`;
-    document.getElementById("winner-player").innerText = `— ${winner.name}`;
-    document.getElementById("winner-reason").innerText =
-      `🤖 AI Judge: ${result.reason || "No reason provided."}`;
+    await loadWinnerForRound(round);
 
     console.log("Winning player:", winner.name);
+    console.log("Winning table:", winner.table_no);
     console.log("Winning answer:", winner.answer);
     console.log("Winning reason:", result.reason);
 
-    return {
-      scenario: game.scenario,
-      winner_name: winner.name,
-      winner_answer: winner.answer,
-      reason: result.reason || "No reason provided.",
-    };
+    return;
   } catch (err) {
     console.error("Unexpected evaluateAnswers error:", err);
     alert("Something went wrong during evaluation.");

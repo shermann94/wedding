@@ -69,7 +69,6 @@ button:disabled,
 .input {
   width: 100%;
   padding: 14px 16px;
-  margin-bottom: 15px;
   border: none;
   border-radius: 16px;
   font-size: 18px;
@@ -370,7 +369,7 @@ textarea {
   border-radius: 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   position: relative;
   overflow: hidden;
   background: linear-gradient(145deg, #ffffff, #f4f4f4);
@@ -591,4 +590,37 @@ button:disabled,
   opacity: 0.65;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* Error state for inputs*/
+.input-error {
+  border: 2px solid #ff6b6b !important;
+  box-shadow:
+    0 4px 0 #ffd6d6,
+    0 6px 12px rgba(255, 0, 0, 0.08);
+}
+
+.field-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.field-group .input {
+  width: 100%;
+  margin: 0;
+}
+
+.error-text {
+  color: #ff4d4f;
+  font-size: 14px;
+  line-height: 1.2;
+  margin: 6px 0 0 6px;
+  text-align: left;
+  display: none;
+}
+
+.error-text.show {
+  display: block;
 }

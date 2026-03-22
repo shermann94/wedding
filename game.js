@@ -22,8 +22,8 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-function getPlayerKey(name, tableNo) {
-  return `${normalizeText(name)}::${tableNo}`;
+function getPlayerKey(name, tableCode) {
+  return `${normalizeText(name)}::${normalizeText(tableCode)}`;
 }
 
 function getControlsEl() {
@@ -50,43 +50,32 @@ function setBusy(value, options = {}) {
   });
 
   if (evaluateBtn) {
-    if (value && options.evaluateLoading) {
-      evaluateBtn.innerText = "Judging...";
-    } else {
-      evaluateBtn.innerText = "Evaluate Answers";
-    }
+    evaluateBtn.innerText =
+      value && options.evaluateLoading ? "Judging..." : "Evaluate Answers";
   }
 
   if (nextBtn) {
-    if (value && options.nextRoundLoading) {
-      nextBtn.innerText = "Loading Next Round...";
-    } else {
-      nextBtn.innerText = "Next Round";
-    }
+    nextBtn.innerText =
+      value && options.nextRoundLoading
+        ? "Loading Next Round..."
+        : "Next Round";
   }
 
   if (resetBtn) {
-    if (value && options.resetLoading) {
-      resetBtn.innerText = "Resetting...";
-    } else {
-      resetBtn.innerText = "Reset Game";
-    }
+    resetBtn.innerText =
+      value && options.resetLoading ? "Resetting..." : "Reset Game";
   }
 
   if (leaderboardBtn) {
-    if (value && options.leaderboardLoading) {
-      leaderboardBtn.innerText = "Loading Winners...";
-    } else {
-      leaderboardBtn.innerText = "Show Winners";
-    }
+    leaderboardBtn.innerText =
+      value && options.leaderboardLoading
+        ? "Loading Winners..."
+        : "Show Winners";
   }
 
   if (startBtn) {
-    if (value && options.startLoading) {
-      startBtn.innerText = "Starting...";
-    } else {
-      startBtn.innerText = "Start Game";
-    }
+    startBtn.innerText =
+      value && options.startLoading ? "Starting..." : "Start Game";
   }
 }
 
@@ -166,7 +155,6 @@ function setPhaseUI(phase) {
   } else if (phase === "results") {
     document.getElementById("scenario-card").style.display = "flex";
     document.getElementById("winner-card").style.display = "flex";
-    nextBtn.style.display = "inline-block";
     resetBtn.style.display = "inline-block";
 
     if (currentGameState.round_number >= 5) {
@@ -619,7 +607,7 @@ async function renderLeaderboard() {
       card.innerHTML = `
           <div class="leaderboard-top">
             <div class="leaderboard-round">Round ${winner.round_number}</div>
-            <div class="leaderboard-table">Table ${winner.table_no}</div>
+            <div class="leaderboard-table">Table ${winner.table_code}</div>
           </div>
           <div class="leaderboard-name">${winner.player_name}</div>
           <div class="leaderboard-answer">“${winner.answer || ""}”</div>
@@ -678,7 +666,7 @@ async function loadWinnerForRound(round) {
     document.getElementById("winner-card").style.display = "flex";
     document.getElementById("winner-answer").innerText = `"${data.answer}"`;
     document.getElementById("winner-player").innerText =
-      `— ${data.player_name} (Table ${data.table_no})`;
+      `— ${data.player_name} (Table ${data.table_code})`;
     document.getElementById("winner-reason").innerText =
       `🤖 AI Judge: ${data.reason || "No reason provided."}`;
   } catch (err) {
@@ -707,7 +695,7 @@ async function evaluateAnswers() {
 
     const { data: answerRows, error: answersError } = await client
       .from("answers")
-      .select("name, answer, table_no")
+      .select("name, answer, table_code")
       .eq("round_number", round)
       .order("id", { ascending: true });
 
@@ -721,9 +709,9 @@ async function evaluateAnswers() {
       .map((row) => ({
         name: row.name?.trim(),
         answer: row.answer?.trim(),
-        table_no: row.table_no,
+        table_code: row.table_code?.trim(),
       }))
-      .filter((row) => row.name && row.answer && row.table_no != null)
+      .filter((row) => row.name && row.answer && row.table_code)
       .filter((row) => row.answer !== "{}")
       .filter((row) => row.answer.length > 5);
 
@@ -736,15 +724,16 @@ async function evaluateAnswers() {
 
     const { data: winnerRows, error: winnersError } = await client
       .from("winners")
-      .select("player_name, table_no");
+      .select("player_name, table_code");
 
     if (!winnersError && Array.isArray(winnerRows)) {
       const previousWinnerKeys = new Set(
-        winnerRows.map((row) => getPlayerKey(row.player_name, row.table_no)),
+        winnerRows.map((row) => getPlayerKey(row.player_name, row.table_code)),
       );
 
       answersForAI = allAnswers.filter(
-        (row) => !previousWinnerKeys.has(getPlayerKey(row.name, row.table_no)),
+        (row) =>
+          !previousWinnerKeys.has(getPlayerKey(row.name, row.table_code)),
       );
     } else if (winnersError) {
       console.error("Failed to load previous winners:", winnersError);
@@ -842,7 +831,7 @@ async function evaluateAnswers() {
       {
         round_number: round,
         player_name: winner.name,
-        table_no: winner.table_no,
+        table_code: winner.table_code,
         answer: winner.answer,
         reason: result.reason || "No reason provided.",
       },

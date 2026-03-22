@@ -2,6 +2,7 @@ const supabaseUrl = "https://dmztipmhrwxdjnogznvi.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU";
 const client = supabase.createClient(supabaseUrl, supabaseKey);
+window.client = client; // expose for testing, debugging, and load test functions, should remove in production
 
 let currentGameState = {
   round_number: 1,
@@ -424,31 +425,36 @@ function spawnAnswerBubble(text) {
   bubble.className = "answer-item";
   bubble.innerText = text;
 
-  const bubbleWidth = 420;
-  const bubbleHeight = 120;
+  // stop animation while measuring
+  bubble.style.animation = "none";
+  bubble.style.visibility = "hidden";
+  bubble.style.left = "0px";
+  bubble.style.top = "0px";
+
+  answersBox.appendChild(bubble);
+
+  const bubbleWidth = bubble.offsetWidth;
+  const bubbleHeight = bubble.offsetHeight;
 
   const minLeft = 20;
   const maxLeft = Math.max(minLeft, answersBox.clientWidth - bubbleWidth - 20);
 
-  // only spawn in the LOWER part on Y axis
   const minTop = answersBox.clientHeight * 0.72;
   const maxTop = answersBox.clientHeight - bubbleHeight - 16;
-
   const startTop = Math.floor(Math.random() * (maxTop - minTop + 1) + minTop);
 
-  // make sure bubble fades BEFORE reaching the buttons
-  // top safe zone = 32px from top of answers box
   const topSafeLimit = 8;
   const rise = Math.max(80, startTop - topSafeLimit);
 
   bubble.style.setProperty("--rise", `${rise}px`);
-
   bubble.style.left =
     Math.floor(Math.random() * (maxLeft - minLeft + 1) + minLeft) + "px";
-
   bubble.style.top = startTop + "px";
+  bubble.style.visibility = "visible";
 
-  answersBox.appendChild(bubble);
+  // force reflow, then start animation properly
+  bubble.offsetHeight;
+  bubble.style.animation = "floatBubble 3.8s linear forwards";
 
   setTimeout(() => {
     if (bubble.parentNode) bubble.remove();

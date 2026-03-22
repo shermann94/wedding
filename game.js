@@ -159,6 +159,8 @@ function setPhaseUI(phase) {
 
     if (currentGameState.round_number >= 5) {
       leaderboardBtn.style.display = "inline-block";
+    } else {
+      nextBtn.style.display = "inline-block";
     }
   } else if (phase === "leaderboard") {
     document.getElementById("leaderboard-card").style.display = "block";

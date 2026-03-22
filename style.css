@@ -33,6 +33,10 @@ button:disabled,
   transform: none !important;
 }
 
+#submit-btn {
+  margin-top: 20px;
+}
+
 .container {
   max-width: 700px;
   width: calc(100% - 48px);

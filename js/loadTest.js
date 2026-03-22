@@ -123,12 +123,39 @@ if (location.hostname === "localhost") {
       return;
     }
 
+    const tableCodes = [
+      "VIP1",
+      "VIP2",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "22",
+      "23",
+    ];
+
     const answers = buildAnswers(total);
 
     let sent = 0;
     const start = performance.now();
 
     window.loadTestControl.isRunning = true;
+    window.loadTestControl.timerId = null;
 
     async function sendNext() {
       if (!window.loadTestControl.isRunning) return;
@@ -136,16 +163,16 @@ if (location.hostname === "localhost") {
       if (sent >= total) {
         window.loadTestControl.isRunning = false;
         window.loadTestControl.timerId = null;
-        console.log("Done inserting test answers");
+        console.log(`Done inserting ${total} test answers`);
         return;
       }
 
       const answerText = answers[sent];
-      sent++;
+      const tableCode = tableCodes[sent % tableCodes.length];
 
       const row = {
-        name: `LoadTestUser${sent}`,
-        table_no: (sent % 23) + 1,
+        name: `LoadTestUser${sent + 1}`,
+        table_code: tableCode,
         answer: answerText,
         round_number: round,
       };
@@ -153,17 +180,18 @@ if (location.hostname === "localhost") {
       const { error } = await client.from("answers").insert([row]);
 
       if (error) {
-        console.error("Insert failed at", sent, error);
+        console.error(`Insert failed at ${sent + 1}:`, error);
         window.stopLoadTest();
         return;
       }
+
+      sent++;
 
       if (sent % 10 === 0 || sent === total) {
         console.log(`Inserted ${sent}/${total}`);
       }
 
       const elapsed = performance.now() - start;
-
       window.loadTestControl.timerId = setTimeout(sendNext, nextDelay(elapsed));
     }
 

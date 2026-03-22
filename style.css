@@ -21,6 +21,18 @@ body {
 /* PLAYER PAGE LAYOUT */
 /* ================================================= */
 
+/* Global button behavior */
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+.submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 .container {
   max-width: 700px;
   width: calc(100% - 48px);
@@ -108,7 +120,6 @@ textarea {
   border-radius: 14px;
   background: #ffb6c1;
   color: white;
-  cursor: pointer;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
@@ -305,12 +316,13 @@ textarea {
 /* CONTROLS */
 
 .controls {
-  z-index: 1;
+  position: relative;
+  z-index: 20;
   margin-bottom: 0;
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: -2px;
+  margin-top: 10px;
 }
 
 .controls button {
@@ -320,7 +332,6 @@ textarea {
   border-radius: 14px;
   background: #ffb6c1;
   color: white;
-  cursor: pointer;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
@@ -390,7 +401,6 @@ textarea {
   padding: 16px;
   font-size: 18px;
   font-weight: 600;
-  cursor: pointer;
   box-shadow:
     0 5px 0 #c2185b,
     0 10px 20px rgba(0, 0, 0, 0.2);
@@ -517,4 +527,68 @@ textarea {
   font-size: 24px;
   color: #666;
   margin: 20px 0;
+}
+
+/* ================================================= */
+/* LOADING OVERLAY */
+/* ================================================= */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(255, 250, 252, 0.82);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+}
+
+.loading-card {
+  min-width: 280px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 28px;
+  padding: 28px 26px;
+  text-align: center;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12),
+    0 2px 0 rgba(255, 255, 255, 0.75) inset;
+}
+
+.loading-spinner {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 182, 193, 0.35);
+  border-top-color: #ff7aa2;
+  animation: spinLoader 0.8s linear infinite;
+}
+
+.loading-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #6b5c8a;
+  margin-bottom: 8px;
+}
+
+.loading-subtitle {
+  font-size: 16px;
+  color: #777;
+}
+
+@keyframes spinLoader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* disabled buttons */
+button:disabled,
+.submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
 }

@@ -14,7 +14,15 @@
   </head>
 
   <body>
-    <div id="join-screen" class="container">
+    <div id="player-loading-screen" class="loading-overlay">
+      <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <div class="loading-title">Loading your game...</div>
+        <div class="loading-subtitle">Getting everything ready</div>
+      </div>
+    </div>
+
+    <div id="join-screen" class="container" style="display: none">
       <img
         src="assets/gamelogo.png"
         class="game-logo"
@@ -46,7 +54,9 @@
           style="text-transform: uppercase"
         />
 
-        <button class="submit-btn" onclick="joinGame()">Join Game</button>
+        <button id="join-btn" class="submit-btn" onclick="joinGame()">
+          Join Game
+        </button>
       </div>
 
       <p id="join-error"></p>

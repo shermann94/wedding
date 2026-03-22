@@ -9,10 +9,18 @@
   </head>
 
   <body>
+    <div id="host-loading-screen" class="loading-overlay">
+      <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <div class="loading-title">Setting up the game...</div>
+        <div class="loading-subtitle">Please wait a moment</div>
+      </div>
+    </div>
+
     <div class="game-container">
       <h1 class="game-title">💍 Marriage AIdvice</h1>
 
-      <div class="lobby" id="lobby">
+      <div class="lobby" id="lobby" style="display: none">
         <h2>Room Code</h2>
         <h1 id="room-code">----</h1>
         <p id="player-count">0 players joined</p>
@@ -36,7 +44,7 @@
         <div id="leaderboard-list"></div>
       </div>
 
-      <div class="controls">
+      <div class="controls" style="display: none">
         <button id="start-game-btn" onclick="startGame()">Start Game</button>
 
         <button

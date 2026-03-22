@@ -14,7 +14,15 @@
   </head>
 
   <body>
-    <div id="join-screen" class="container">
+    <div id="player-loading-screen" class="loading-overlay">
+      <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <div class="loading-title">Loading your game...</div>
+        <div class="loading-subtitle">Getting everything ready</div>
+      </div>
+    </div>
+
+    <div id="join-screen" class="container" style="display: none">
       <img
         src="assets/gamelogo.png"
         class="game-logo"
@@ -26,30 +34,36 @@
           Enter the room to give your best marriage advice!
         </h3>
 
-        <input id="name" class="input" placeholder="Your name" />
-
         <input
-          id="table"
-          type="number"
-          inputmode="numeric"
-          min="1"
-          step="1"
-          max="23"
+          id="name"
           class="input"
-          placeholder="Table number"
+          placeholder="Your name"
+          autocomplete="on"
         />
+
+        <div class="field-group">
+          <input
+            id="table"
+            class="input"
+            placeholder="Table number (e.g. VIP1 or 12)"
+            style="text-transform: uppercase"
+            autocomplete="on"
+          />
+          <p id="join-error" class="error-text"></p>
+        </div>
 
         <input
           id="roomcode"
           class="input"
-          placeholder="ROOM CODE"
+          placeholder="Room code"
           style="text-transform: uppercase"
+          autocomplete="on"
         />
 
-        <button class="submit-btn" onclick="joinGame()">Join Game</button>
+        <button id="join-btn" class="submit-btn" onclick="joinGame()">
+          Join Game
+        </button>
       </div>
-
-      <p id="join-error"></p>
     </div>
 
     <div id="waiting-screen" style="display: none" class="container">

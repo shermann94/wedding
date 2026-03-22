@@ -21,6 +21,18 @@ body {
 /* PLAYER PAGE LAYOUT */
 /* ================================================= */
 
+/* Global button behavior */
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+.submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 .container {
   max-width: 700px;
   width: calc(100% - 48px);
@@ -57,7 +69,6 @@ body {
 .input {
   width: 100%;
   padding: 14px 16px;
-  margin-bottom: 15px;
   border: none;
   border-radius: 16px;
   font-size: 18px;
@@ -108,7 +119,6 @@ textarea {
   border-radius: 14px;
   background: #ffb6c1;
   color: white;
-  cursor: pointer;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
@@ -193,7 +203,7 @@ textarea {
 
 .scenario-card {
   background: white;
-  padding: 34px 42px;
+  padding: 24px 42px;
   border-radius: 24px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
   width: 88%;
@@ -205,7 +215,6 @@ textarea {
 #scenario-card {
   max-width: 1250px;
   min-height: 190px;
-  padding: 48px 52px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -265,8 +274,7 @@ textarea {
 }
 
 #winner-card h2 {
-  font-size: 34px;
-  margin-bottom: 14px;
+  margin: 16px 0px;
 }
 
 #winner-answer {
@@ -278,12 +286,6 @@ textarea {
 #winner-player {
   font-size: 22px;
   margin: 6px 0;
-}
-
-#winner-reason {
-  font-size: 18px;
-  margin-top: 10px;
-  line-height: 1.4;
 }
 
 /* FLOAT ANIMATION */
@@ -313,12 +315,13 @@ textarea {
 /* CONTROLS */
 
 .controls {
-  z-index: 1;
+  position: relative;
+  z-index: 20;
   margin-bottom: 0;
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: -2px;
+  margin-top: 10px;
 }
 
 .controls button {
@@ -328,7 +331,6 @@ textarea {
   border-radius: 14px;
   background: #ffb6c1;
   color: white;
-  cursor: pointer;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
@@ -367,7 +369,7 @@ textarea {
   border-radius: 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   position: relative;
   overflow: hidden;
   background: linear-gradient(145deg, #ffffff, #f4f4f4);
@@ -398,7 +400,6 @@ textarea {
   padding: 16px;
   font-size: 18px;
   font-weight: 600;
-  cursor: pointer;
   box-shadow:
     0 5px 0 #c2185b,
     0 10px 20px rgba(0, 0, 0, 0.2);
@@ -450,4 +451,176 @@ textarea {
   100% {
     transform: translateY(0px);
   }
+}
+
+/* LeaderBoard */
+#leaderboard-card {
+  max-width: 1180px;
+  padding: 28px 34px;
+  text-align: left;
+}
+
+#leaderboard-card h2 {
+  margin: 0 0 22px 0;
+  font-size: 46px;
+}
+
+#leaderboard-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+  align-items: stretch;
+}
+
+.leaderboard-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 22px;
+  padding: 22px 26px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  min-height: 170px;
+}
+
+.leaderboard-item-last {
+  grid-column: 1 / -1;
+  max-width: 520px;
+  justify-self: center;
+  width: 100%;
+}
+
+.leaderboard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.leaderboard-round {
+  font-size: 22px;
+  font-weight: 700;
+  color: #7a5c8f;
+}
+
+.leaderboard-table {
+  font-size: 20px;
+  font-weight: 600;
+  color: #666;
+}
+
+.leaderboard-name {
+  font-size: 34px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.leaderboard-answer {
+  font-size: 23px;
+  line-height: 1.35;
+  color: #444;
+  word-break: break-word;
+}
+
+.leaderboard-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 24px;
+  color: #666;
+  margin: 20px 0;
+}
+
+/* ================================================= */
+/* LOADING OVERLAY */
+/* ================================================= */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(255, 250, 252, 0.82);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+}
+
+.loading-card {
+  min-width: 280px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 28px;
+  padding: 28px 26px;
+  text-align: center;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12),
+    0 2px 0 rgba(255, 255, 255, 0.75) inset;
+}
+
+.loading-spinner {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 182, 193, 0.35);
+  border-top-color: #ff7aa2;
+  animation: spinLoader 0.8s linear infinite;
+}
+
+.loading-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #6b5c8a;
+  margin-bottom: 8px;
+}
+
+.loading-subtitle {
+  font-size: 16px;
+  color: #777;
+}
+
+@keyframes spinLoader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* disabled buttons */
+button:disabled,
+.submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Error state for inputs*/
+.input-error {
+  border: 2px solid #ff6b6b !important;
+  box-shadow:
+    0 4px 0 #ffd6d6,
+    0 6px 12px rgba(255, 0, 0, 0.08);
+}
+
+.field-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.field-group .input {
+  width: 100%;
+  margin: 0;
+}
+
+.error-text {
+  color: #ff4d4f;
+  font-size: 14px;
+  line-height: 1.2;
+  margin: 6px 0 0 6px;
+  text-align: left;
+  display: none;
+}
+
+.error-text.show {
+  display: block;
 }

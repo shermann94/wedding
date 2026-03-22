@@ -4,17 +4,47 @@ const supabaseKey =
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
 let isSubmitting = false;
+let isBooting = true;
+let isBusy = false;
 
-// ======================
-// HELPERS
-// ======================
+function showPlayerLoading(show) {
+  const loading = document.getElementById("player-loading-screen");
+  if (!loading) return;
+  loading.style.display = show ? "flex" : "none";
+}
+
+function hideAllPlayerScreens() {
+  document.getElementById("join-screen").style.display = "none";
+  document.getElementById("waiting-screen").style.display = "none";
+  document.getElementById("answer-screen").style.display = "none";
+  document.getElementById("submitted-screen").style.display = "none";
+}
+
+function setPlayerBusy(value, options = {}) {
+  isBusy = value;
+
+  const joinBtn = document.getElementById("join-btn");
+  const submitBtn = document.getElementById("submit-btn");
+
+  if (joinBtn) {
+    joinBtn.disabled = value;
+    joinBtn.innerText =
+      value && options.joinLoading ? "Joining..." : "Join Game";
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = value;
+    submitBtn.innerText =
+      value && options.submitLoading ? "Submitting..." : "Submit Advice";
+  }
+}
 
 function clearGameLocalState() {
   localStorage.removeItem("playerName");
-  localStorage.removeItem("tableNo");
+  localStorage.removeItem("tableCode");
   localStorage.removeItem("roomCode");
   localStorage.removeItem("joined");
-  localStorage.removeItem("submitted");
+  localStorage.removeItem("submittedRound");
 }
 
 function setSubmitButtonLoading(isLoading) {
@@ -25,55 +55,166 @@ function setSubmitButtonLoading(isLoading) {
   btn.innerText = isLoading ? "Submitting..." : "Submit Advice";
 }
 
-// ======================
-// AUTO REJOIN IF REFRESH
-// ======================
+function getSubmittedRound() {
+  return Number(localStorage.getItem("submittedRound") || 0);
+}
+
+function setSubmittedRound(round) {
+  localStorage.setItem("submittedRound", String(round));
+}
+
+function sanitizeTableCode(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s*-\s*/g, "-");
+}
+
+function setFieldError(inputId, message) {
+  const input = document.getElementById(inputId);
+  const errorEl = document.getElementById("join-error");
+
+  if (input) input.classList.add("input-error");
+  if (errorEl) {
+    errorEl.innerText = message;
+    errorEl.classList.add("show");
+  }
+}
+
+function clearFieldError(inputId) {
+  const input = document.getElementById(inputId);
+  const errorEl = document.getElementById("join-error");
+
+  if (input) input.classList.remove("input-error");
+  if (errorEl) {
+    errorEl.innerText = "";
+    errorEl.classList.remove("show");
+  }
+}
+
+async function getCanonicalTableCode(inputCode) {
+  const sanitizedInput = sanitizeTableCode(inputCode);
+  if (!sanitizedInput) return null;
+
+  const { data, error } = await client.from("tables").select("table_code");
+
+  if (error) {
+    console.error("Failed to load tables:", error);
+    throw new Error("Failed to validate table code.");
+  }
+
+  const match = (data || []).find(
+    (row) => sanitizeTableCode(row.table_code) === sanitizedInput,
+  );
+
+  return match ? match.table_code : null;
+}
+
+function updatePlayerInfoUI() {
+  const playerName = localStorage.getItem("playerName");
+  const tableCode = localStorage.getItem("tableCode");
+
+  if (playerName && tableCode) {
+    document.getElementById("player-info").style.display = "block";
+    document.getElementById("player-name-display").innerText =
+      "👤 " + playerName;
+    document.getElementById("player-table-display").innerText =
+      " — Table " + tableCode;
+  }
+}
+
+async function hasSubmittedForRound(round) {
+  const playerName = localStorage.getItem("playerName");
+  const tableCode = localStorage.getItem("tableCode");
+
+  if (!playerName || !tableCode) {
+    return false;
+  }
+
+  try {
+    const { data, error } = await client
+      .from("answers")
+      .select("id")
+      .eq("name", playerName)
+      .eq("table_code", tableCode)
+      .eq("round_number", round)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to check submission state:", error);
+      return getSubmittedRound() === round;
+    }
+
+    return Boolean(data);
+  } catch (err) {
+    console.error("Unexpected submission check error:", err);
+    return getSubmittedRound() === round;
+  }
+}
 
 window.onload = async function () {
+  document.getElementById("table")?.addEventListener("input", () => {
+    clearFieldError("table");
+  });
+
   try {
-    if (localStorage.getItem("joined") === "true") {
-      const playerName = localStorage.getItem("playerName");
-      const tableNo = localStorage.getItem("tableNo");
+    isBooting = true;
+    hideAllPlayerScreens();
+    showPlayerLoading(true);
 
-      if (playerName && tableNo) {
-        document.getElementById("player-info").style.display = "block";
-        document.getElementById("player-name-display").innerText =
-          "👤 " + playerName;
-        document.getElementById("player-table-display").innerText =
-          " — Table " + tableNo;
-      }
-
-      const { data, error } = await client
-        .from("game_state")
-        .select("*")
-        .eq("id", 1)
-        .single();
-
-      if (error || !data) {
-        console.error("Failed to load game state on refresh:", error);
-        showWaiting();
-        return;
-      }
-
-      if (data.phase === "answering") {
-        showAnswerScreen();
-      } else if (data.phase === "waiting") {
-        showWaiting();
-      } else {
-        showSubmittedScreen();
-      }
+    if (localStorage.getItem("joined") !== "true") {
+      document.getElementById("join-screen").style.display = "block";
+      return;
     }
+
+    updatePlayerInfoUI();
+
+    const { data, error } = await client
+      .from("game_state")
+      .select("*")
+      .eq("id", 1)
+      .single();
+
+    if (error || !data) {
+      console.error("Failed to load game state on refresh:", error);
+      showWaiting();
+      return;
+    }
+
+    if (data.phase === "waiting") {
+      showWaiting();
+      return;
+    }
+
+    if (data.phase === "answering") {
+      const alreadySubmitted = await hasSubmittedForRound(data.round_number);
+
+      if (alreadySubmitted) {
+        setSubmittedRound(data.round_number);
+        showSubmittedScreen();
+      } else {
+        localStorage.removeItem("submittedRound");
+        await showAnswerScreen(data.scenario);
+      }
+
+      return;
+    }
+
+    showSubmittedScreen();
   } catch (err) {
     console.error("Window load error:", err);
+  } finally {
+    isBooting = false;
+    showPlayerLoading(false);
   }
 };
 
-// ===============================
-// JOIN GAME
-// ===============================
-
 async function joinGame() {
-  document.getElementById("join-error").innerText = "";
+  if (isBusy) return;
+  setPlayerBusy(true, { joinLoading: true });
+  clearFieldError("table");
 
   try {
     const { data: game, error: gameError } = await client
@@ -95,20 +236,22 @@ async function joinGame() {
     }
 
     const playerName = document.getElementById("name").value.trim();
-    const tableNo = document.getElementById("table").value.trim();
+    const rawTableInput = document.getElementById("table").value;
     const enteredRoomCode = document
       .getElementById("roomcode")
       .value.trim()
       .toUpperCase();
 
-    if (!playerName || !tableNo || !enteredRoomCode) {
+    if (!playerName || !rawTableInput || !enteredRoomCode) {
       alert("Please fill in your name, table number and room code.");
       return;
     }
 
     const rawRoomCode = game.room_code.toUpperCase();
     const formattedRoomCode =
-      rawRoomCode.slice(0, 4) + "-" + rawRoomCode.slice(4);
+      rawRoomCode.length >= 8
+        ? rawRoomCode.slice(0, 4) + "-" + rawRoomCode.slice(4)
+        : rawRoomCode;
 
     if (
       enteredRoomCode !== rawRoomCode &&
@@ -118,10 +261,19 @@ async function joinGame() {
       return;
     }
 
-    const tableNumber = Number(tableNo);
+    let canonicalTableCode;
+    try {
+      canonicalTableCode = await getCanonicalTableCode(rawTableInput);
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
 
-    if (!Number.isInteger(tableNumber) || tableNumber < 1 || tableNumber > 23) {
-      alert("Please enter a valid table number.");
+    if (!canonicalTableCode) {
+      setFieldError(
+        "table",
+        "❌ Table number not found. Please check your table number.",
+      );
       return;
     }
 
@@ -129,7 +281,7 @@ async function joinGame() {
       .from("players")
       .select("id")
       .eq("name", playerName)
-      .eq("table_no", tableNumber)
+      .eq("table_code", canonicalTableCode)
       .eq("room_code", rawRoomCode)
       .maybeSingle();
 
@@ -141,7 +293,7 @@ async function joinGame() {
       const { error } = await client.from("players").insert([
         {
           name: playerName,
-          table_no: tableNumber,
+          table_code: canonicalTableCode,
           room_code: rawRoomCode,
         },
       ]);
@@ -154,45 +306,32 @@ async function joinGame() {
     }
 
     localStorage.setItem("playerName", playerName);
-    localStorage.setItem("tableNo", String(tableNumber));
+    localStorage.setItem("tableCode", canonicalTableCode);
     localStorage.setItem("roomCode", rawRoomCode);
     localStorage.setItem("joined", "true");
-    localStorage.removeItem("submitted");
+    localStorage.removeItem("submittedRound");
 
-    document.getElementById("player-info").style.display = "block";
-    document.getElementById("player-name-display").innerText =
-      "👤 " + playerName;
-    document.getElementById("player-table-display").innerText =
-      " — Table " + tableNumber;
+    document.getElementById("table").value = canonicalTableCode;
 
+    updatePlayerInfoUI();
     showWaiting();
   } catch (err) {
     console.error("Unexpected join error:", err);
     alert("Something went wrong while joining.");
+  } finally {
+    setPlayerBusy(false);
   }
 }
 
-// ======================
-// SHOW SCREENS
-// ======================
-
 function showWaiting() {
-  document.getElementById("join-screen").style.display = "none";
-  document.getElementById("answer-screen").style.display = "none";
-  document.getElementById("submitted-screen").style.display = "none";
+  hideAllPlayerScreens();
   document.getElementById("waiting-screen").style.display = "block";
 }
 
 function showSubmittedScreen() {
-  document.getElementById("join-screen").style.display = "none";
-  document.getElementById("waiting-screen").style.display = "none";
-  document.getElementById("answer-screen").style.display = "none";
+  hideAllPlayerScreens();
   document.getElementById("submitted-screen").style.display = "block";
 }
-
-// ==================================
-// LISTEN FOR GAME STATE CHANGES
-// ==================================
 
 client
   .channel("player_game_state_updates")
@@ -203,8 +342,9 @@ client
       schema: "public",
       table: "game_state",
     },
-    (payload) => {
+    async (payload) => {
       const phase = payload.new.phase;
+      const round = payload.new.round_number;
 
       if (phase === "waiting") {
         clearGameLocalState();
@@ -217,32 +357,38 @@ client
       }
 
       if (phase === "answering") {
-        localStorage.removeItem("submitted");
-        showAnswerScreen();
-      } else if (phase === "judging" || phase === "results") {
+        const alreadySubmitted = await hasSubmittedForRound(round);
+
+        if (alreadySubmitted) {
+          setSubmittedRound(round);
+          showSubmittedScreen();
+        } else {
+          localStorage.removeItem("submittedRound");
+          await showAnswerScreen(payload.new.scenario);
+        }
+      } else if (
+        phase === "judging" ||
+        phase === "results" ||
+        phase === "leaderboard"
+      ) {
         showSubmittedScreen();
       }
     },
   )
   .subscribe();
 
-// ======================
-// SHOW ANSWER SCREEN
-// ======================
-
-async function showAnswerScreen() {
-  document.getElementById("join-screen").style.display = "none";
-  document.getElementById("waiting-screen").style.display = "none";
-  document.getElementById("submitted-screen").style.display = "none";
-
-  if (localStorage.getItem("submitted") === "true") {
-    showSubmittedScreen();
-    return;
-  }
-
+async function showAnswerScreen(prefetchedScenario) {
+  hideAllPlayerScreens();
   document.getElementById("answer-screen").style.display = "block";
   document.getElementById("answer").value = "";
+
+  updatePlayerInfoUI();
   setSubmitButtonLoading(false);
+
+  if (prefetchedScenario) {
+    document.getElementById("scenario").innerText = prefetchedScenario;
+    return;
+  }
 
   try {
     const { data, error } = await client
@@ -264,31 +410,21 @@ async function showAnswerScreen() {
   }
 }
 
-// ======================
-// SUBMIT ADVICE
-// ======================
-
 async function submitAdvice() {
-  if (isSubmitting) return;
+  if (isSubmitting || isBusy) return;
 
   try {
     const answer = document.getElementById("answer").value.trim();
     const playerName = localStorage.getItem("playerName");
-    const storedTableNo = localStorage.getItem("tableNo");
-    const tableNo = Number(storedTableNo);
+    const tableCode = localStorage.getItem("tableCode");
 
     if (!answer) {
       alert("Please enter your advice.");
       return;
     }
 
-    if (!playerName || !storedTableNo) {
+    if (!playerName || !tableCode) {
       alert("Player info missing. Please rejoin the game.");
-      return;
-    }
-
-    if (!Number.isInteger(tableNo) || tableNo < 1) {
-      alert("Table number missing. Please rejoin the game.");
       return;
     }
 
@@ -298,7 +434,7 @@ async function submitAdvice() {
     }
 
     isSubmitting = true;
-    setSubmitButtonLoading(true);
+    setPlayerBusy(true, { submitLoading: true });
 
     const { data: game, error: gameError } = await client
       .from("game_state")
@@ -318,11 +454,18 @@ async function submitAdvice() {
     }
 
     const round = game.round_number;
+    const alreadySubmitted = await hasSubmittedForRound(round);
+
+    if (alreadySubmitted) {
+      setSubmittedRound(round);
+      showSubmittedScreen();
+      return;
+    }
 
     const { error } = await client.from("answers").insert([
       {
         name: playerName,
-        table_no: tableNo,
+        table_code: tableCode,
         answer: answer,
         round_number: round,
       },
@@ -334,29 +477,21 @@ async function submitAdvice() {
       return;
     }
 
-    localStorage.setItem("submitted", "true");
+    setSubmittedRound(round);
     showSubmittedScreen();
   } catch (err) {
     console.error("Unexpected submit error:", err);
     alert("Something went wrong while submitting.");
   } finally {
     isSubmitting = false;
-    setSubmitButtonLoading(false);
+    setPlayerBusy(false);
   }
 }
-
-// ======================
-// RESET LOCAL (TESTING)
-// ======================
 
 function resetGame() {
   clearGameLocalState();
   location.reload();
 }
-
-// ======================
-// FILTER
-// ======================
 
 function containsBannedWords(answer) {
   const bannedWords = [

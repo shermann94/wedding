@@ -25,7 +25,7 @@ function getPlayerKey(name, tableNo) {
 }
 
 function showNoWinnerCard() {
-  document.getElementById("winner-card").style.display = "block";
+  document.getElementById("winner-card").style.display = "flex";
   document.getElementById("winner-answer").innerText = "";
   document.getElementById("winner-player").innerText = "";
   document.getElementById("winner-reason").innerText =
@@ -120,7 +120,7 @@ function setPhaseUI(phase) {
     resetBtn.style.display = "none";
   } else if (phase === "answering") {
     lobby.style.display = "none";
-    scenarioCard.style.display = "block";
+    scenarioCard.style.display = "flex";
     winnerCard.style.display = "none";
 
     startBtn.style.display = "none";
@@ -129,7 +129,7 @@ function setPhaseUI(phase) {
     resetBtn.style.display = "inline-block";
   } else if (phase === "judging") {
     lobby.style.display = "none";
-    scenarioCard.style.display = "block";
+    scenarioCard.style.display = "flex";
     winnerCard.style.display = "none";
 
     startBtn.style.display = "none";
@@ -138,8 +138,8 @@ function setPhaseUI(phase) {
     resetBtn.style.display = "inline-block";
   } else if (phase === "results") {
     lobby.style.display = "none";
-    scenarioCard.style.display = "block";
-    winnerCard.style.display = "block";
+    scenarioCard.style.display = "flex";
+    winnerCard.style.display = "flex";
 
     startBtn.style.display = "none";
     evaluateBtn.style.display = "none";
@@ -495,7 +495,7 @@ async function updateAnswerCount() {
   }
 }
 
-async function showLeaderboard() {
+async function showWinners() {
   try {
     const { data, error } = await client
       .from("winners")
@@ -504,26 +504,41 @@ async function showLeaderboard() {
 
     if (error) {
       console.error("Leaderboard error:", error);
-      alert("Failed to load leaderboard.");
+      alert("Failed to load winners.");
       return;
     }
 
     const list = document.getElementById("leaderboard-list");
     list.innerHTML = "";
 
-    (data || []).forEach((winner) => {
-      const row = document.createElement("p");
-      row.innerText =
-        "Round " +
-        winner.round_number +
-        " — Table " +
-        winner.table_no +
-        " — " +
-        winner.player_name;
-      list.appendChild(row);
-    });
+    if (!data || data.length === 0) {
+      list.innerHTML = `<p class="leaderboard-empty">No winners yet.</p>`;
+    } else {
+      data.forEach((winner, index) => {
+        const card = document.createElement("div");
+        card.className = "leaderboard-item";
 
+        if (index === 4) {
+          card.classList.add("leaderboard-item-last");
+        }
+
+        card.innerHTML = `
+          <div class="leaderboard-top">
+            <div class="leaderboard-round">Round ${winner.round_number}</div>
+            <div class="leaderboard-table">Table ${winner.table_no}</div>
+          </div>
+          <div class="leaderboard-name">${winner.player_name}</div>
+          <div class="leaderboard-answer">“${winner.answer || ""}”</div>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    document.getElementById("scenario-card").style.display = "none";
+    document.getElementById("winner-card").style.display = "none";
     document.getElementById("leaderboard-card").style.display = "block";
+    document.querySelector(".controls").style.display = "none";
   } catch (err) {
     console.error("Unexpected leaderboard error:", err);
   }
@@ -546,7 +561,7 @@ async function loadWinnerForRound(round) {
       return;
     }
 
-    document.getElementById("winner-card").style.display = "block";
+    document.getElementById("winner-card").style.display = "flex";
     document.getElementById("winner-answer").innerText = `"${data.answer}"`;
     document.getElementById("winner-player").innerText =
       `— ${data.player_name} (Table ${data.table_no})`;

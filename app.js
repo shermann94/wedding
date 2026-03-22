@@ -3,6 +3,28 @@ const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU";
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+let isSubmitting = false;
+
+// ======================
+// HELPERS
+// ======================
+
+function clearGameLocalState() {
+  localStorage.removeItem("playerName");
+  localStorage.removeItem("tableNo");
+  localStorage.removeItem("roomCode");
+  localStorage.removeItem("joined");
+  localStorage.removeItem("submitted");
+}
+
+function setSubmitButtonLoading(isLoading) {
+  const btn = document.getElementById("submit-btn");
+  if (!btn) return;
+
+  btn.disabled = isLoading;
+  btn.innerText = isLoading ? "Submitting..." : "Submit Advice";
+}
+
 // ======================
 // AUTO REJOIN IF REFRESH
 // ======================
@@ -103,18 +125,32 @@ async function joinGame() {
       return;
     }
 
-    const { error } = await client.from("players").insert([
-      {
-        name: playerName,
-        table_no: tableNumber,
-        room_code: rawRoomCode,
-      },
-    ]);
+    const { data: existingPlayer, error: existingError } = await client
+      .from("players")
+      .select("id")
+      .eq("name", playerName)
+      .eq("table_no", tableNumber)
+      .eq("room_code", rawRoomCode)
+      .maybeSingle();
 
-    if (error) {
-      console.error("Join error:", error);
-      alert("Unable to join game: " + error.message);
-      return;
+    if (existingError) {
+      console.error("Existing player lookup error:", existingError);
+    }
+
+    if (!existingPlayer) {
+      const { error } = await client.from("players").insert([
+        {
+          name: playerName,
+          table_no: tableNumber,
+          room_code: rawRoomCode,
+        },
+      ]);
+
+      if (error) {
+        console.error("Join error:", error);
+        alert("Unable to join game: " + error.message);
+        return;
+      }
     }
 
     localStorage.setItem("playerName", playerName);
@@ -171,7 +207,7 @@ client
       const phase = payload.new.phase;
 
       if (phase === "waiting") {
-        localStorage.clear();
+        clearGameLocalState();
         location.reload();
         return;
       }
@@ -206,6 +242,7 @@ async function showAnswerScreen() {
 
   document.getElementById("answer-screen").style.display = "block";
   document.getElementById("answer").value = "";
+  setSubmitButtonLoading(false);
 
   try {
     const { data, error } = await client
@@ -232,6 +269,8 @@ async function showAnswerScreen() {
 // ======================
 
 async function submitAdvice() {
+  if (isSubmitting) return;
+
   try {
     const answer = document.getElementById("answer").value.trim();
     const playerName = localStorage.getItem("playerName");
@@ -257,6 +296,9 @@ async function submitAdvice() {
       alert("Please keep your advice respectful.");
       return;
     }
+
+    isSubmitting = true;
+    setSubmitButtonLoading(true);
 
     const { data: game, error: gameError } = await client
       .from("game_state")
@@ -297,6 +339,9 @@ async function submitAdvice() {
   } catch (err) {
     console.error("Unexpected submit error:", err);
     alert("Something went wrong while submitting.");
+  } finally {
+    isSubmitting = false;
+    setSubmitButtonLoading(false);
   }
 }
 
@@ -305,7 +350,7 @@ async function submitAdvice() {
 // ======================
 
 function resetGame() {
-  localStorage.clear();
+  clearGameLocalState();
   location.reload();
 }
 

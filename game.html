@@ -6,9 +6,14 @@
 
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    
   </head>
 
   <body>
+
+    <audio id="bgm" loop>
+    <source src="assets/bgm.wav" type="audio/wav" />
+    </audio>
     <div id="host-loading-screen" class="loading-overlay">
       <div class="loading-card">
         <div class="loading-spinner"></div>
@@ -18,12 +23,27 @@
     </div>
 
     <div class="game-container">
-      <h1 class="game-title">💍 Marriage AIdvice</h1>
+      <img src="assets/gamelogo.png" class="game-logo"alt="💍 Marriage AIdvice"/>
+
+        <p id="player-count">0 players joined</p>
 
       <div class="lobby" id="lobby" style="display: none">
-        <h2>Room Code</h2>
-        <h1 id="room-code">----</h1>
-        <p id="player-count">0 players joined</p>
+        <div class="join-wrapper">
+  
+
+  <div class="join-box">
+  <div class="qr-section">
+    <img src="assets/qr.png" class="qr-image" />
+   
+  </div>
+
+  <div class="code-section">
+    <h2 class="join-label">Game Code</h2>
+    <h1 id="room-code-large" class="room-code-big">----</h1>
+  </div>
+</div>
+
+</div>
       </div>
 
       <p id="answer-count" class="answer-counter" style="display: none"></p>
@@ -45,29 +65,31 @@
       </div>
 
       <div class="controls" style="display: none">
-        <button id="start-game-btn" onclick="startGame()">Start Game</button>
+        <button id="start-game-btn" class="submit-btn" onclick="startGame()">Start Game</button>
 
         <button
           id="evaluate-btn"
           style="display: none"
+          class="submit-btn"
           onclick="evaluateAnswers()"
         >
           Evaluate Answers
         </button>
 
-        <button id="next-round-btn" style="display: none" onclick="nextRound()">
+        <button id="next-round-btn" class="submit-btn" style="display: none" onclick="nextRound()">
           Next Round
         </button>
 
         <button
           id="leaderboard-btn"
+          class="submit-btn"
           onclick="showWinners()"
           style="display: none"
         >
           Show Winners
         </button>
 
-        <button id="reset-btn" style="display: none" onclick="resetGame()">
+        <button id="reset-btn" class="submit-btn" style="display: none" onclick="resetGame()">
           Reset Game
         </button>
       </div>

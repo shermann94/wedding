@@ -142,6 +142,7 @@ function setPhaseUI(phase) {
   resetBtn.style.display = "none";
   leaderboardBtn.style.display = "none";
 
+
   if (phase === "waiting") {
     document.getElementById("lobby").style.display = "block";
     startBtn.style.display = "inline-block";
@@ -166,6 +167,15 @@ function setPhaseUI(phase) {
     document.getElementById("leaderboard-card").style.display = "block";
     resetBtn.style.display = "inline-block";
   }
+const playerCountEl = document.getElementById("player-count");
+
+if (playerCountEl) {
+  if (phase === "waiting") {
+    playerCountEl.style.display = "block";
+  } else {
+    playerCountEl.style.display = "none";
+  }
+}
 
   renderAnswerCount();
 }
@@ -176,6 +186,7 @@ async function loadGame() {
     showHostLoading(true);
     hideAllHostPanels();
     getControlsEl().style.display = "none";
+    startBGM();
 
     const { data, error } = await client
       .from("game_state")
@@ -200,7 +211,11 @@ async function loadGame() {
         ? roomCode.slice(0, 4) + "-" + roomCode.slice(4)
         : roomCode;
 
-    document.getElementById("room-code").innerText = formattedCode || "----";
+    document.getElementById("room-code-large").innerText = formattedCode || "----";
+    const bigCode = document.getElementById("room-code-large");
+    if (bigCode) {
+      bigCode.innerText = formattedCode || "----";
+      }
     document.getElementById("scenario").innerText = currentGameState.scenario;
 
     await updatePlayerCount();
@@ -874,3 +889,21 @@ async function evaluateAnswers() {
 }
 
 loadGame();
+
+
+function startBGM() {
+  const bgm = document.getElementById("bgm");
+  if (!bgm) return;
+
+  bgm.volume = 0.4; // adjust
+  bgm.play().catch(() => {
+    // fallback: wait for user interaction
+    document.addEventListener(
+      "click",
+      () => {
+        bgm.play();
+      },
+      { once: true }
+    );
+  });
+}

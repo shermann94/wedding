@@ -329,17 +329,27 @@ textarea {
 }
 
 .controls button {
+  background: linear-gradient(135deg, #ff2f6d, #ff4d8d);  /* ✅ same as index */
+  color: white;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 5px 0 #c2185b,
+    0 10px 20px rgba(0, 0, 0, 0.2);
+
+  width: auto;
   padding: 14px 28px;
   font-size: 18px;
-  border: none;
-  border-radius: 14px;
-  background: #ffb6c1;
-  color: white;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
-.controls button:hover {
-  background: #ffa3b1;
+.controls .submit-btn:active {
+  transform: translateY(3px);
+}
+
+.controls .submit-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ff2f6d, #ff4d8d); /* keep same */
 }
 
 /* PLAYER INFO */
@@ -627,4 +637,136 @@ button:disabled,
 
 .error-text.show {
   display: block;
+}
+
+/* CENTER WRAPPER */
+.join-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* TITLE */
+.room-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+/* MAIN BOX (like Kahoot card) */
+.join-box {
+   display: inline-flex;               /* 👈 THIS makes it horizontal */
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+
+  background: rgba(255, 255, 255, 0.96);
+  padding: 40px 60px;
+  border-radius: 28px;
+
+  
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+
+
+/* QR */
+.qr-image {
+  width: 160px;
+  height: 160px;
+  border-radius: 18px;
+  margin-bottom: 18px;
+}
+
+/* SMALL TEXT */
+.join-url {
+  font-size: 20px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+/* BIG GAME CODE (IMPORTANT) */
+.room-code-big {
+  font-size: 80px;
+  font-weight: 900;
+  color: #222;
+  letter-spacing: 6px;
+  margin-top: 10px;
+
+  text-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.room-code-big {
+  white-space: nowrap;
+}
+
+.room-code-big {
+  white-space: nowrap;
+  font-size: clamp(48px, 6vw, 88px);
+}
+
+
+.room-code-big {
+  white-space: nowrap;
+    font-size: clamp(36px, 4vw, 72px);
+
+}
+
+.code-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  
+}
+
+#player-count {
+  position: fixed;        /* 👈 pin to screen */
+  top: 24px;
+  right: 24px;
+
+  margin: 0;
+  padding: 12px 18px;
+
+  background: rgba(255, 255, 255, 0.95);
+  color: #444;
+
+  font-size: 24px;
+  font-weight: 600;
+
+  border-radius: 14px;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+}
+
+.join-label {
+  margin: 0 0 8px 0;   /* control spacing */
+}
+
+.room-code-big {
+  margin: 0;           /* remove extra bottom space */
+}
+
+.controls .submit-btn {
+  font-family: "Fredoka", sans-serif;   /* 👈 match index */
+  
+  background: linear-gradient(135deg, #ff2f6d, #ff4d8d);
+  color: white;
+
+  border: none;
+  border-radius: 16px;
+
+  padding: 16px 28px;
+  font-size: 18px;
+  font-weight: 600;
+
+  box-shadow:
+    0 5px 0 #c2185b,
+    0 10px 20px rgba(0, 0, 0, 0.2);
+
+  width: auto;
+
+  transition: all 0.15s ease;   /* 👈 IMPORTANT for hover */
 }

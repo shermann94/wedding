@@ -49,16 +49,19 @@
             style="text-transform: uppercase"
             autocomplete="on"
           />
-          <p id="join-error" class="error-text"></p>
+          <p id="table-error" class="error-text"></p>
         </div>
 
-        <input
-          id="roomcode"
-          class="input"
-          placeholder="Room code"
-          style="text-transform: uppercase"
-          autocomplete="on"
-        />
+        <div class="field-group">
+          <input
+            id="roomcode"
+            class="input"
+            placeholder="Room code"
+            style="text-transform: uppercase"
+            autocomplete="on"
+          />
+          <p id="roomcode-error" class="error-text"></p>
+        </div>
 
         <button id="join-btn" class="submit-btn" onclick="joinGame()">
           Join Game

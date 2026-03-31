@@ -140,8 +140,6 @@ async function generateWithRetry(prompt, answerCount) {
       const result = await model.generateContent(prompt);
       const text = result.response.text();
 
-      console.log("Gemini raw response:", text);
-
       return parseModelResponse(text, answerCount);
     } catch (error) {
       lastError = error;
@@ -175,9 +173,6 @@ export default async function handler(req, res) {
 
   try {
     const { scenario, answers } = req.body;
-
-    console.log("Incoming scenario:", scenario);
-    console.log("Incoming answers count:", answers?.length);
 
     if (!isValidRequestBody(scenario, answers)) {
       return res.status(400).json({ error: "Missing scenario or answers" });

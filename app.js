@@ -73,7 +73,7 @@ function sanitizeTableCode(value) {
 
 function setFieldError(inputId, message) {
   const input = document.getElementById(inputId);
-  const errorEl = document.getElementById("join-error");
+  const errorEl = document.getElementById(`${inputId}-error`);
 
   if (input) input.classList.add("input-error");
   if (errorEl) {
@@ -84,7 +84,7 @@ function setFieldError(inputId, message) {
 
 function clearFieldError(inputId) {
   const input = document.getElementById(inputId);
-  const errorEl = document.getElementById("join-error");
+  const errorEl = document.getElementById(`${inputId}-error`);
 
   if (input) input.classList.remove("input-error");
   if (errorEl) {
@@ -159,6 +159,9 @@ window.onload = async function () {
     clearFieldError("table");
   });
 
+  document.getElementById("roomcode")?.addEventListener("input", () => {
+    clearFieldError("roomcode");
+  });
   try {
     isBooting = true;
     hideAllPlayerScreens();
@@ -215,6 +218,7 @@ async function joinGame() {
   if (isBusy) return;
   setPlayerBusy(true, { joinLoading: true });
   clearFieldError("table");
+  clearFieldError("roomcode");
 
   try {
     const { data: game, error: gameError } = await client
@@ -253,13 +257,8 @@ async function joinGame() {
         ? rawRoomCode.slice(0, 4) + "-" + rawRoomCode.slice(4)
         : rawRoomCode;
 
-    if (
-      enteredRoomCode !== rawRoomCode &&
-      enteredRoomCode !== formattedRoomCode
-    ) {
-      document.getElementById("join-error").innerText = "❌ Wrong room code.";
-      return;
-    }
+    const isRoomCodeWrong =
+      enteredRoomCode !== rawRoomCode && enteredRoomCode !== formattedRoomCode;
 
     let canonicalTableCode;
     try {
@@ -269,13 +268,15 @@ async function joinGame() {
       return;
     }
 
-    if (!canonicalTableCode) {
+    const isTableWrong = !canonicalTableCode;
+
+    if (isTableWrong)
       setFieldError(
         "table",
         "❌ Table number not found. Please check your table number.",
       );
-      return;
-    }
+    if (isRoomCodeWrong) setFieldError("roomcode", "❌ Wrong room code.");
+    if (isTableWrong || isRoomCodeWrong) return;
 
     const { data: existingPlayer, error: existingError } = await client
       .from("players")

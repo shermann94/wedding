@@ -16,6 +16,8 @@ let livePlayerCount = 0;
 let isBooting = true;
 let isBusy = false;
 
+let nextLane = 0;
+
 function normalizeText(value) {
   return String(value || "")
     .trim()
@@ -142,7 +144,6 @@ function setPhaseUI(phase) {
   resetBtn.style.display = "none";
   leaderboardBtn.style.display = "none";
 
-
   if (phase === "waiting") {
     document.getElementById("lobby").style.display = "block";
     startBtn.style.display = "inline-block";
@@ -167,15 +168,15 @@ function setPhaseUI(phase) {
     document.getElementById("leaderboard-card").style.display = "block";
     resetBtn.style.display = "inline-block";
   }
-const playerCountEl = document.getElementById("player-count");
+  const playerCountEl = document.getElementById("player-count");
 
-if (playerCountEl) {
-  if (phase === "waiting") {
-    playerCountEl.style.display = "block";
-  } else {
-    playerCountEl.style.display = "none";
+  if (playerCountEl) {
+    if (phase === "waiting") {
+      playerCountEl.style.display = "block";
+    } else {
+      playerCountEl.style.display = "none";
+    }
   }
-}
 
   renderAnswerCount();
 }
@@ -211,11 +212,10 @@ async function loadGame() {
         ? roomCode.slice(0, 4) + "-" + roomCode.slice(4)
         : roomCode;
 
-    document.getElementById("room-code-large").innerText = formattedCode || "----";
     const bigCode = document.getElementById("room-code-large");
     if (bigCode) {
       bigCode.innerText = formattedCode || "----";
-      }
+    }
     document.getElementById("scenario").innerText = currentGameState.scenario;
 
     await updatePlayerCount();
@@ -402,6 +402,7 @@ async function startGame() {
 
     liveAnswerCount = 0;
     document.getElementById("answers").innerHTML = "";
+    nextLane = 0;
     clearWinnerCard();
     await updateAnswerCount();
   } catch (err) {
@@ -420,6 +421,7 @@ async function nextRound() {
     document.getElementById("winner-card").style.display = "none";
     document.getElementById("leaderboard-card").style.display = "none";
     document.getElementById("answers").innerHTML = "";
+    nextLane = 0;
 
     const { data: game, error: gameError } = await client
       .from("game_state")
@@ -535,6 +537,7 @@ async function resetGame() {
     liveAnswerCount = 0;
     livePlayerCount = 0;
     document.getElementById("answers").innerHTML = "";
+    nextLane = 0;
     clearWinnerCard();
     document.getElementById("leaderboard-list").innerHTML = "";
     await loadGame();
@@ -553,36 +556,35 @@ function spawnAnswerBubble(text) {
     answersBox.removeChild(answersBox.firstChild);
   }
 
+  const laneIndex = nextLane;
+  nextLane = (nextLane + 1) % 3;
+
   const bubble = document.createElement("div");
   bubble.className = "answer-item";
   bubble.innerText = text;
-
   bubble.style.animation = "none";
   bubble.style.visibility = "hidden";
   bubble.style.left = "0px";
   bubble.style.top = "0px";
-
   answersBox.appendChild(bubble);
 
-  const bubbleWidth = bubble.offsetWidth;
+  // REPLACE WITH:
+  const boxWidth = answersBox.clientWidth;
+  const boxHeight = answersBox.clientHeight;
+  const laneWidth = Math.floor(boxWidth / 3);
+
+  // constrain bubble to lane width if needed, otherwise CSS max-width handles it, make sure there is a gap of 24px
+  bubble.style.maxWidth = `${laneWidth - 24}px`;
+
   const bubbleHeight = bubble.offsetHeight;
+  const laneLeft = laneIndex * laneWidth;
+  const startTop = boxHeight - bubbleHeight - 16;
+  const rise = startTop - 8;
 
-  const minLeft = 20;
-  const maxLeft = Math.max(minLeft, answersBox.clientWidth - bubbleWidth - 20);
-
-  const minTop = answersBox.clientHeight * 0.72;
-  const maxTop = answersBox.clientHeight - bubbleHeight - 16;
-  const startTop = Math.floor(Math.random() * (maxTop - minTop + 1) + minTop);
-
-  const topSafeLimit = 8;
-  const rise = Math.max(80, startTop - topSafeLimit);
-
+  bubble.style.left = `${laneLeft}px`;
+  bubble.style.top = `${startTop}px`;
   bubble.style.setProperty("--rise", `${rise}px`);
-  bubble.style.left =
-    Math.floor(Math.random() * (maxLeft - minLeft + 1) + minLeft) + "px";
-  bubble.style.top = startTop + "px";
   bubble.style.visibility = "visible";
-
   bubble.offsetHeight;
   bubble.style.animation = "floatBubble 3.8s linear forwards";
 
@@ -890,7 +892,6 @@ async function evaluateAnswers() {
 
 loadGame();
 
-
 function startBGM() {
   const bgm = document.getElementById("bgm");
   if (!bgm) return;
@@ -903,7 +904,7 @@ function startBGM() {
       () => {
         bgm.play();
       },
-      { once: true }
+      { once: true },
     );
   });
 }

@@ -6,6 +6,7 @@ const client = supabase.createClient(supabaseUrl, supabaseKey);
 let isSubmitting = false;
 let isBooting = true;
 let isBusy = false;
+let countdownInterval = null;
 
 function showPlayerLoading(show) {
   const loading = document.getElementById("player-loading-screen");
@@ -61,6 +62,46 @@ function getSubmittedRound() {
 
 function setSubmittedRound(round) {
   localStorage.setItem("submittedRound", String(round));
+}
+
+async function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
+
+  const { data, error } = await client
+    .from("game_state")
+    .select("round_ends_at")
+    .eq("id", 1)
+    .single();
+
+  if (error || !data?.round_ends_at) return;
+
+  const endTime = new Date(data.round_ends_at);
+
+  countdownInterval = setInterval(() => {
+    const now = new Date();
+    const diff = Math.floor((endTime - now) / 1000);
+
+    const timerEl = document.getElementById("timer");
+
+    if (!timerEl) return;
+
+    if (diff <= 0) {
+      timerEl.innerText = "⏰ Time's up!";
+      clearInterval(countdownInterval);
+
+      document.getElementById("submit-btn").disabled = true;
+      const inputEl = document.getElementById("answer");
+      if (inputEl) inputEl.style.display = "none";
+
+      // ✅ SHOW MESSAGE
+      const msg = document.getElementById("time-up-msg");
+      if (msg) msg.style.display = "block";
+
+      return;
+    }
+
+    timerEl.innerText = `⏳ ${Math.max(diff, 0)}s remaining`;
+  }, 500);
 }
 
 function sanitizeTableCode(value) {
@@ -347,6 +388,11 @@ client
       const phase = payload.new.phase;
       const round = payload.new.round_number;
 
+      // ✅ ADD THIS
+      if (phase !== "answering") {
+        if (countdownInterval) clearInterval(countdownInterval);
+      }
+
       if (phase === "waiting") {
         clearGameLocalState();
         location.reload();
@@ -379,12 +425,26 @@ client
   .subscribe();
 
 async function showAnswerScreen(prefetchedScenario) {
+  // ✅ SHOW input again for new round
+  const inputEl = document.getElementById("answer");
+  if (inputEl) inputEl.style.display = "block";
+
+  // also re-enable submit button
+  const submitBtn = document.getElementById("submit-btn");
+  if (submitBtn) submitBtn.disabled = false;
+
+  const msg = document.getElementById("time-up-msg");
+  if (msg) msg.style.display = "none";
+
   hideAllPlayerScreens();
   document.getElementById("answer-screen").style.display = "block";
   document.getElementById("answer").value = "";
 
   updatePlayerInfoUI();
   setSubmitButtonLoading(false);
+
+  // timer starts
+  startCountdown();
 
   if (prefetchedScenario) {
     document.getElementById("scenario").innerText = prefetchedScenario;
@@ -439,7 +499,7 @@ async function submitAdvice() {
 
     const { data: game, error: gameError } = await client
       .from("game_state")
-      .select("round_number, phase")
+      .select("round_number, phase, round_ends_at")
       .eq("id", 1)
       .single();
 
@@ -451,6 +511,16 @@ async function submitAdvice() {
 
     if (game.phase !== "answering") {
       alert("This round is no longer accepting answers.");
+      return;
+    }
+
+    // ✅ ADD THIS BLOCK HERE
+    const now = new Date();
+    const endTime = new Date(game.round_ends_at);
+
+    if (now > endTime) {
+      alert("⏰ Time is up! No more answers allowed.");
+      showSubmittedScreen();
       return;
     }
 

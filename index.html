@@ -83,8 +83,10 @@
         <span id="player-table-display"></span>
       </div>
 
-      <h1 class="title">Give Your Advice</h1>
-
+      <div class="header-row">
+        <h1 class="title">Give Your Advice</h1>
+        <h2 id="timer" class="timer"></h2>
+      </div>
       <div class="scenario-box">
         <p id="scenario">Loading scenario...</p>
       </div>
@@ -99,8 +101,9 @@
       <button id="submit-btn" onclick="submitAdvice()" class="submit-btn">
         Submit Advice
       </button>
-
-      <p class="hint">Watch the big screen for results!</p>
+      <p id="time-up-msg" class="time-up-msg" style="display: none">
+        No more answers allowed.
+      </p>
     </div>
 
     <div id="submitted-screen" style="display: none" class="container">

@@ -15,6 +15,7 @@ let liveAnswerCount = 0;
 let livePlayerCount = 0;
 let isBooting = true;
 let isBusy = false;
+let hostCountdownInterval = null;
 
 let nextLane = 0;
 
@@ -222,6 +223,23 @@ async function loadGame() {
     await updateAnswerCount();
     setPhaseUI(data.phase);
 
+    if (data.phase === "answering") {
+      document.body.classList.add("game-started");
+    } else {
+      document.body.classList.remove("game-started");
+    }
+
+    // ✅ ADD THIS HERE
+    if (data.phase === "answering" && data.round_ends_at) {
+      const timerEl = document.getElementById("host-timer");
+      if (timerEl) timerEl.style.display = "block";
+
+      startHostCountdown(data.round_ends_at);
+    } else {
+      const timerEl = document.getElementById("host-timer");
+      if (timerEl) timerEl.style.display = "none";
+    }
+
     if (data.phase === "results") {
       await loadWinnerForRound(data.round_number);
     } else if (data.phase === "leaderboard") {
@@ -313,6 +331,27 @@ client
     async (payload) => {
       const phase = payload.new.phase;
 
+      // change logo state
+      if (phase === "answering") {
+        document.body.classList.add("game-started");
+      } else if (phase === "waiting") {
+        document.body.classList.remove("game-started");
+      }
+
+      if (phase === "answering") {
+        const timerEl = document.getElementById("host-timer");
+        if (timerEl) timerEl.style.display = "block";
+
+        startHostCountdown(payload.new.round_ends_at);
+      } else {
+        if (hostCountdownInterval) clearInterval(hostCountdownInterval);
+        const timerEl = document.getElementById("host-timer");
+        if (timerEl) {
+          timerEl.style.display = "none";
+          timerEl.innerText = "";
+        }
+      }
+
       currentGameState = {
         round_number: payload.new.round_number,
         phase: payload.new.phase,
@@ -368,6 +407,8 @@ client
   )
   .subscribe();
 
+const ROUND_DURATION = 60; // seconds
+
 async function startGame() {
   if (isBusy) return;
   setBusy(true, { startLoading: true });
@@ -384,6 +425,8 @@ async function startGame() {
       alert("Failed to load round 1 scenario.");
       return;
     }
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + ROUND_DURATION * 1000);
 
     const { error } = await client
       .from("game_state")
@@ -391,6 +434,7 @@ async function startGame() {
         round_number: 1,
         phase: "answering",
         scenario: scenarioData.scenario,
+        round_ends_at: endsAt.toISOString(),
       })
       .eq("id", 1);
 
@@ -464,12 +508,15 @@ async function nextRound() {
     liveAnswerCount = 0;
     setPhaseUI("answering");
 
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + ROUND_DURATION * 1000);
     const { error: updateError } = await client
       .from("game_state")
       .update({
         round_number: nextRoundNumber,
         phase: "answering",
         scenario: scenarioData.scenario,
+        round_ends_at: endsAt.toISOString(),
       })
       .eq("id", 1);
 
@@ -907,4 +954,26 @@ function startBGM() {
       { once: true },
     );
   });
+}
+
+function startHostCountdown(endTimeString) {
+  if (hostCountdownInterval) clearInterval(hostCountdownInterval);
+
+  const endTime = new Date(endTimeString);
+
+  hostCountdownInterval = setInterval(() => {
+    const now = new Date();
+    const diff = Math.floor((endTime - now) / 1000);
+
+    const timerEl = document.getElementById("host-timer");
+    if (!timerEl) return;
+
+    if (diff <= 0) {
+      timerEl.innerText = "⏰ Time's up!";
+      clearInterval(hostCountdownInterval);
+      return;
+    }
+
+    timerEl.innerText = `⏳ ${diff}s left`;
+  }, 300);
 }

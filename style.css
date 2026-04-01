@@ -49,7 +49,7 @@ button:disabled,
 
 .title {
   display: inline-block;
-  color: #7a6ea9;
+  color: #2c2c2c;
   background: rgba(255, 255, 255, 0.72);
   padding: 8px 18px;
   border-radius: 16px;
@@ -135,6 +135,13 @@ textarea {
   transform: scale(0.97);
 }
 
+#submit-btn {
+  background: linear-gradient(135deg, #ff2f6d, #ff4d8d);
+  box-shadow:
+    0 5px 0 #c2185b,
+    0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
 /* HINT */
 
 .hint {
@@ -215,7 +222,7 @@ textarea {
   padding: 24px 42px;
   border-radius: 24px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-  width: 88%;
+  width: 100%;
   text-align: center;
   z-index: 1;
   position: relative;
@@ -768,4 +775,132 @@ button:disabled,
   width: auto;
 
   transition: all 0.15s ease; /* 👈 IMPORTANT for hover */
+}
+
+.timer {
+  display: inline-block;
+
+  background: rgba(255, 255, 255, 0.95);
+
+  padding: 8px 14px;
+  border-radius: 12px;
+
+  font-size: 22px;
+  font-weight: 700;
+  color: #ff2f6d;
+
+  margin-bottom: 12px;
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* 🎮 GAME START MODE */
+body.game-started .game-logo {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+
+  width: 160px; /* smaller logo */
+
+  margin: 0;
+  transform: none;
+  animation: none;
+
+  z-index: 3000;
+}
+
+.game-logo {
+  transition: all 0.4s ease;
+}
+
+body.game-started .game-logo {
+  opacity: 0.85;
+}
+
+.center-timer {
+  font-size: 42px;
+  font-weight: 800;
+  color: #ff2f6d;
+
+  text-align: center;
+
+  margin-top: 10px;
+  margin-bottom: -10px;
+
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* wrapper keeps same width as scenario */
+.scenario-wrapper {
+  width: 88%;
+  max-width: 1250px;
+  margin: 0 auto; /* ⭐ THIS FIXES IT */
+}
+
+/* timer row */
+.scenario-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* timer style */
+.scenario-timer {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ff2f6d;
+
+  margin: 0;
+
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.scenario-timer {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+.header-row {
+  display: flex;
+  flex-direction: column; /* ⭐ stack vertically */
+  align-items: flex-start; /* align left */
+
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.timer {
+  display: inline-block;
+
+  min-width: 160px;
+  text-align: center;
+
+  white-space: nowrap;
+
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 14px;
+  border-radius: 12px;
+
+  font-size: 22px;
+  font-weight: 700;
+  color: #ff2f6d;
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.time-up-msg {
+  display: none;
+
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ff2f6d;
+
+  margin-top: 16px;
+
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 16px;
+  border-radius: 14px;
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }

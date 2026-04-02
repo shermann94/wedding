@@ -480,6 +480,12 @@ textarea {
   margin-right: auto;
   filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.4));
   animation: floatLogo 4s ease-in-out infinite;
+  position: static;
+  top: auto;
+  left: auto;
+  transform: none;
+  z-index: auto;
+  transition: all 0.4s ease;
 }
 
 /* LeaderBoard */
@@ -797,21 +803,12 @@ body.game-started .game-logo {
   position: fixed;
   top: 16px;
   left: 20px;
-
-  width: 160px; /* smaller logo */
-
+  width: 160px;
+  max-width: none;
   margin: 0;
   transform: none;
   animation: none;
-
   z-index: 3000;
-}
-
-.game-logo {
-  transition: all 0.4s ease;
-}
-
-body.game-started .game-logo {
   opacity: 0.85;
 }
 

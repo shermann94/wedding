@@ -147,7 +147,7 @@ function renderAnswerCount() {
     return;
   }
 
-  answerCountEl.style.display = "block";
+  answerCountEl.style.display = "flex";
   answerCountEl.innerText = `${liveAnswerCount} / ${livePlayerCount} answers received`;
 }
 
@@ -266,7 +266,7 @@ async function loadGame() {
 
     if (data.phase === "answering" && data.round_ends_at) {
       const timerEl = document.getElementById("host-timer");
-      if (timerEl) timerEl.style.display = "block";
+      if (timerEl) timerEl.style.display = "flex";
       startHostCountdown(data.round_ends_at);
     } else {
       const timerEl = document.getElementById("host-timer");
@@ -373,7 +373,7 @@ client
 
       if (phase === "answering") {
         const timerEl = document.getElementById("host-timer");
-        if (timerEl) timerEl.style.display = "block";
+        if (timerEl) timerEl.style.display = "flex";
 
         startHostCountdown(payload.new.round_ends_at);
       } else {

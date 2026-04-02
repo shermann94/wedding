@@ -82,7 +82,37 @@ function setBusy(value, options = {}) {
   }
 }
 
+function showWinnerLoading(message = "AI is choosing the funniest answer.") {
+  const winnerCard = document.getElementById("winner-card");
+  const winnerLoading = document.getElementById("winner-loading");
+  const winnerContent = document.getElementById("winner-content");
+  const winnerLoadingText = document.getElementById("winner-loading-text");
+
+  if (winnerCard) winnerCard.style.display = "flex";
+  if (winnerLoading) winnerLoading.style.display = "flex";
+  if (winnerContent) winnerContent.style.display = "none";
+  if (winnerLoadingText) winnerLoadingText.innerText = message;
+}
+
+function hideWinnerLoading() {
+  const winnerLoading = document.getElementById("winner-loading");
+  const winnerContent = document.getElementById("winner-content");
+  if (winnerLoading) winnerLoading.style.display = "none";
+  if (winnerContent) winnerContent.style.display = "block";
+}
+
+function showWinnerError(message) {
+  hideWinnerLoading();
+  document.getElementById("winner-card").style.display = "flex";
+  document.getElementById("winner-title").innerText = "⚠️ Judging Failed";
+  document.getElementById("winner-answer").innerText = "";
+  document.getElementById("winner-player").innerText = "";
+  document.getElementById("winner-reason").innerText = message;
+}
+
 function clearWinnerCard() {
+  hideWinnerLoading();
+  document.getElementById("winner-title").innerText = "🏆 Best Marriage Advice";
   document.getElementById("winner-answer").innerText = "";
   document.getElementById("winner-player").innerText = "";
   document.getElementById("winner-reason").innerText = "";
@@ -96,7 +126,9 @@ function hideAllHostPanels() {
 }
 
 function showNoWinnerCard() {
+  hideWinnerLoading();
   document.getElementById("winner-card").style.display = "flex";
+  document.getElementById("winner-title").innerText = "No Winner This Round";
   document.getElementById("winner-answer").innerText = "";
   document.getElementById("winner-player").innerText = "";
   document.getElementById("winner-reason").innerText =
@@ -115,7 +147,7 @@ function renderAnswerCount() {
     return;
   }
 
-  answerCountEl.style.display = "block";
+  answerCountEl.style.display = "flex";
   answerCountEl.innerText = `${liveAnswerCount} / ${livePlayerCount} answers received`;
 }
 
@@ -154,6 +186,8 @@ function setPhaseUI(phase) {
     resetBtn.style.display = "inline-block";
   } else if (phase === "judging") {
     document.getElementById("scenario-card").style.display = "flex";
+    document.getElementById("winner-card").style.display = "flex";
+    evaluateBtn.style.display = "inline-block";
     resetBtn.style.display = "inline-block";
   } else if (phase === "results") {
     document.getElementById("scenario-card").style.display = "flex";
@@ -169,6 +203,7 @@ function setPhaseUI(phase) {
     document.getElementById("leaderboard-card").style.display = "block";
     resetBtn.style.display = "inline-block";
   }
+
   const playerCountEl = document.getElementById("player-count");
 
   if (playerCountEl) {
@@ -229,11 +264,9 @@ async function loadGame() {
       document.body.classList.remove("game-started");
     }
 
-    // ✅ ADD THIS HERE
     if (data.phase === "answering" && data.round_ends_at) {
       const timerEl = document.getElementById("host-timer");
-      if (timerEl) timerEl.style.display = "block";
-
+      if (timerEl) timerEl.style.display = "flex";
       startHostCountdown(data.round_ends_at);
     } else {
       const timerEl = document.getElementById("host-timer");
@@ -340,7 +373,7 @@ client
 
       if (phase === "answering") {
         const timerEl = document.getElementById("host-timer");
-        if (timerEl) timerEl.style.display = "block";
+        if (timerEl) timerEl.style.display = "flex";
 
         startHostCountdown(payload.new.round_ends_at);
       } else {
@@ -373,8 +406,6 @@ client
         await loadWinnerForRound(payload.new.round_number);
       } else if (phase === "leaderboard") {
         await renderLeaderboard();
-      } else {
-        document.getElementById("winner-card").style.display = "none";
       }
     },
   )
@@ -615,7 +646,6 @@ function spawnAnswerBubble(text) {
   bubble.style.top = "0px";
   answersBox.appendChild(bubble);
 
-  // REPLACE WITH:
   const boxWidth = answersBox.clientWidth;
   const boxHeight = answersBox.clientHeight;
   const laneWidth = Math.floor(boxWidth / 3);
@@ -721,6 +751,7 @@ async function loadWinnerForRound(round) {
 
     if (error) {
       console.error("Load winner error:", error);
+      showWinnerError("Unable to load the winning answer. Please try again.");
       return;
     }
 
@@ -729,7 +760,10 @@ async function loadWinnerForRound(round) {
       return;
     }
 
+    hideWinnerLoading();
     document.getElementById("winner-card").style.display = "flex";
+    document.getElementById("winner-title").innerText =
+      "🏆 Best Marriage Advice";
     document.getElementById("winner-answer").innerText = `"${data.answer}"`;
     document.getElementById("winner-player").innerText =
       `— ${data.player_name} (Table ${data.table_code})`;
@@ -737,6 +771,7 @@ async function loadWinnerForRound(round) {
       `🤖 AI Judge: ${data.reason || "No reason provided."}`;
   } catch (err) {
     console.error("Unexpected loadWinnerForRound error:", err);
+    showWinnerError("Something went wrong while loading the winner.");
   }
 }
 
@@ -753,7 +788,7 @@ async function evaluateAnswers() {
 
     if (gameError || !game) {
       console.error("Failed to load game state:", gameError);
-      alert("Failed to load game state.");
+      showWinnerError("Failed to load game state.");
       return null;
     }
 
@@ -767,7 +802,7 @@ async function evaluateAnswers() {
 
     if (answersError) {
       console.error("Failed to load answers:", answersError);
-      alert("Failed to load answers.");
+      showWinnerError("Failed to load answers.");
       return null;
     }
 
@@ -782,7 +817,7 @@ async function evaluateAnswers() {
       .filter((row) => row.answer.length > 5);
 
     if (allAnswers.length === 0) {
-      alert("No valid answers to judge.");
+      showWinnerError("No valid answers to judge.");
       return null;
     }
 
@@ -813,7 +848,9 @@ async function evaluateAnswers() {
 
       if (resultsPhaseError) {
         console.error("Failed to update results phase:", resultsPhaseError);
-        alert("No eligible winner found, but failed to update game phase.");
+        showWinnerError(
+          "No eligible winner found, and failed to update the game phase.",
+        );
         return null;
       }
 
@@ -835,6 +872,8 @@ async function evaluateAnswers() {
       return null;
     }
 
+    showWinnerLoading("AI is choosing the funniest answer.");
+
     const payload = {
       scenario: game.scenario,
       answers: answersForAI.map((a) => a.answer),
@@ -855,7 +894,7 @@ async function evaluateAnswers() {
       result = await response.json();
     } catch (err) {
       console.error("Failed to call AI:", err);
-      alert("AI failed to judge answers.");
+      showWinnerError("Could not reach the AI judge. Please try again.");
 
       await client
         .from("game_state")
@@ -869,7 +908,7 @@ async function evaluateAnswers() {
 
     if (!response.ok || !Number.isInteger(winnerIndex)) {
       console.error("AI response invalid:", result);
-      alert("AI failed to judge answers.");
+      showWinnerError("The AI response was invalid. Please try again.");
 
       await client
         .from("game_state")
@@ -883,7 +922,7 @@ async function evaluateAnswers() {
 
     if (!winner) {
       console.error("Winner index invalid:", winnerIndex);
-      alert("AI returned an invalid winner.");
+      showWinnerError("The AI picked an invalid winner. Please try again.");
 
       await client
         .from("game_state")
@@ -905,7 +944,7 @@ async function evaluateAnswers() {
 
     if (winnerSaveError) {
       console.error("Failed to save winner:", winnerSaveError);
-      alert("Winner chosen, but failed to save to database.");
+      showWinnerError("Winner chosen, but failed to save to database.");
 
       await client
         .from("game_state")
@@ -922,7 +961,13 @@ async function evaluateAnswers() {
 
     if (resultsPhaseError) {
       console.error("Failed to update results phase:", resultsPhaseError);
-      alert("Winner chosen, but failed to update game phase.");
+      showWinnerError("Winner chosen, but failed to update game phase.");
+
+      await client
+        .from("game_state")
+        .update({ phase: "answering" })
+        .eq("id", 1);
+
       return null;
     }
 
@@ -930,7 +975,10 @@ async function evaluateAnswers() {
     return;
   } catch (err) {
     console.error("Unexpected evaluateAnswers error:", err);
-    alert("Something went wrong during evaluation.");
+    showWinnerError("Something went wrong during judging. Please try again.");
+
+    await client.from("game_state").update({ phase: "answering" }).eq("id", 1);
+
     return null;
   } finally {
     setBusy(false);

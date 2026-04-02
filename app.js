@@ -519,7 +519,6 @@ async function submitAdvice() {
     const endTime = new Date(game.round_ends_at);
 
     if (now > endTime) {
-      alert("⏰ Time is up! No more answers allowed.");
       showSubmittedScreen();
       return;
     }

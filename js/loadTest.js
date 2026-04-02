@@ -1,28 +1,10 @@
-// loadTest.js
-
 if (location.hostname === "localhost") {
-  // =========================
-  // GLOBAL CONTROL
-  // =========================
-  window.loadTestControl = {
+  const loadTestControl = {
     timerId: null,
     isRunning: false,
+    playersSeeded: [],
   };
 
-  window.stopLoadTest = function () {
-    if (window.loadTestControl.timerId) {
-      clearTimeout(window.loadTestControl.timerId);
-    }
-
-    window.loadTestControl.timerId = null;
-    window.loadTestControl.isRunning = false;
-
-    console.log("Load test stopped");
-  };
-
-  // =========================
-  // ANSWER GENERATOR
-  // =========================
   const sampleAnswers = [
     "Always communicate honestly, even when it feels uncomfortable.",
     "Never go to bed angry, but also don’t argue when both are tired.",
@@ -54,148 +36,256 @@ if (location.hostname === "localhost") {
     "Trust each other fully.",
     "Love is a daily choice.",
     "Communicate clearly always.",
-    "Testinernernfgeinriegnruehgeighergheiuhgeghegehgehiugheighegheiuheiuhgurghieuheiuheriugheiugheiugheihgeiugheigheigheigheigheihgeigheigheigheigh.",
+    "Marriage is just teamwork with snacks.",
+    "Apologise fast, forgive slowly, order dessert anyway.",
+    "Sometimes the best advice is to just hug first.",
+    "Lower your voice and raise your standards.",
+    "Never underestimate the power of a sincere sorry.",
+    "Date nights are cheaper than counselling.",
+    "If one is dramatic, the other should not audition too.",
+    "Take turns being right.",
+    "Love loudly, nag softly.",
+    "Argue less, laugh more, split the chores fairly.",
+  ];
+
+  const defaultTableCodes = [
+    "VIP1",
+    "VIP2",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "22",
+    "23",
   ];
 
   function randomAnswer() {
     return sampleAnswers[Math.floor(Math.random() * sampleAnswers.length)];
   }
 
-  function buildAnswers(total) {
-    return Array.from({ length: total }, () => randomAnswer());
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
-  // =========================
-  // TIMING (REALISTIC FLOW)
-  // =========================
-  function nextDelay(elapsedMs) {
-    const t = elapsedMs / 1000;
+  async function getRoomCode() {
+    const { data, error } = await client
+      .from("game_state")
+      .select("room_code")
+      .eq("id", 1)
+      .single();
 
-    if (t < 8) return 700 + Math.random() * 1200;
-    if (t < 25) return 220 + Math.random() * 380;
-    if (t < 45) return 400 + Math.random() * 700;
-    return 800 + Math.random() * 1200;
-  }
-
-  // =========================
-  // VISUAL TEST (NO DB)
-  // =========================
-  window.simulateRealisticBubbles = function (total = 220) {
-    window.stopLoadTest();
-
-    const answers = buildAnswers(total);
-
-    let sent = 0;
-    const start = performance.now();
-
-    window.loadTestControl.isRunning = true;
-
-    function sendNext() {
-      if (!window.loadTestControl.isRunning) return;
-
-      if (sent >= answers.length) {
-        window.loadTestControl.isRunning = false;
-        console.log("Done simulating bubbles");
-        return;
-      }
-
-      spawnAnswerBubble(answers[sent]);
-      sent++;
-
-      const elapsed = performance.now() - start;
-
-      window.loadTestControl.timerId = setTimeout(sendNext, nextDelay(elapsed));
+    if (error || !data?.room_code) {
+      throw new Error("Unable to load room code from game_state.");
     }
 
-    sendNext();
+    return data.room_code;
+  }
+
+  async function getValidTableCodes() {
+    const { data, error } = await client.from("tables").select("table_code");
+
+    if (error) {
+      console.warn("Failed to load tables, falling back to defaults:", error);
+      return defaultTableCodes;
+    }
+
+    const codes = (data || [])
+      .map((row) => String(row.table_code || "").trim())
+      .filter(Boolean);
+
+    return codes.length ? codes : defaultTableCodes;
+  }
+
+  function buildPlayers(total, roomCode, tableCodes) {
+    return Array.from({ length: total }, (_, index) => ({
+      name: `LoadTestUser${index + 1}`,
+      table_code: tableCodes[index % tableCodes.length],
+      room_code: roomCode,
+    }));
+  }
+
+  async function clearOldLoadTestData(round) {
+    const { error: answerDeleteError } = await client
+      .from("answers")
+      .delete()
+      .eq("round_number", round)
+      .like("name", "LoadTestUser%");
+
+    if (answerDeleteError) {
+      console.warn("Failed to clear old fake answers:", answerDeleteError);
+    }
+
+    const { error: playerDeleteError } = await client
+      .from("players")
+      .delete()
+      .like("name", "LoadTestUser%");
+
+    if (playerDeleteError) {
+      console.warn("Failed to clear old fake players:", playerDeleteError);
+    }
+
+    loadTestControl.playersSeeded = [];
+  }
+
+  async function seedPlayers(total) {
+    const roomCode = await getRoomCode();
+    const tableCodes = await getValidTableCodes();
+    const players = buildPlayers(total, roomCode, tableCodes);
+
+    const batchSize = 50;
+
+    for (let i = 0; i < players.length; i += batchSize) {
+      const batch = players.slice(i, i + batchSize);
+
+      const { error } = await client.from("players").insert(batch);
+
+      if (error) {
+        throw new Error(`Failed to insert fake players: ${error.message}`);
+      }
+
+      console.log(
+        `Inserted players ${i + 1}-${Math.min(i + batchSize, players.length)}/${players.length}`,
+      );
+    }
+
+    loadTestControl.playersSeeded = players;
+    return players;
+  }
+
+  function getAdaptiveDelay(elapsedMs, remaining, totalDurationMs) {
+    const remainingBudget = totalDurationMs - elapsedMs;
+
+    if (remaining <= 0) return 0;
+
+    const base =
+      remainingBudget > 0
+        ? Math.max(60, remainingBudget / remaining)
+        : Math.max(60, totalDurationMs / Math.max(1, remaining));
+
+    return base * (0.65 + Math.random() * 0.7);
+  }
+
+  function stopLoadTestInternal() {
+    if (loadTestControl.timerId) {
+      clearTimeout(loadTestControl.timerId);
+    }
+
+    loadTestControl.timerId = null;
+    loadTestControl.isRunning = false;
+
+    console.log("Load test stopped");
+  }
+
+  window.stopLoadTest = function () {
+    stopLoadTestInternal();
   };
 
-  // =========================
-  // DB TEST (REAL FLOW)
-  // =========================
-  window.simulateRealisticAnswerInserts = async function (
-    total = 220,
-    round = currentGameState?.round_number,
-  ) {
-    window.stopLoadTest();
+  window.simulateRoundLoadTest = async function (total = 230) {
+    stopLoadTestInternal();
+
+    const round = currentGameState?.round_number;
+    const phase = currentGameState?.phase;
+    const durationSeconds = 60;
+    const totalDurationMs = durationSeconds * 1000;
 
     if (!round) {
       console.error("No current round number found.");
       return;
     }
 
-    const tableCodes = [
-      "VIP1",
-      "VIP2",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "11",
-      "12",
-      "13",
-      "14",
-      "15",
-      "16",
-      "17",
-      "18",
-      "19",
-      "20",
-      "22",
-      "23",
-    ];
-
-    const answers = buildAnswers(total);
-
-    let sent = 0;
-    const start = performance.now();
-
-    window.loadTestControl.isRunning = true;
-    window.loadTestControl.timerId = null;
-
-    async function sendNext() {
-      if (!window.loadTestControl.isRunning) return;
-
-      if (sent >= total) {
-        window.loadTestControl.isRunning = false;
-        window.loadTestControl.timerId = null;
-        console.log(`Done inserting ${total} test answers`);
-        return;
-      }
-
-      const answerText = answers[sent];
-      const tableCode = tableCodes[sent % tableCodes.length];
-
-      const row = {
-        name: `LoadTestUser${sent + 1}`,
-        table_code: tableCode,
-        answer: answerText,
-        round_number: round,
-      };
-
-      const { error } = await client.from("answers").insert([row]);
-
-      if (error) {
-        console.error(`Insert failed at ${sent + 1}:`, error);
-        window.stopLoadTest();
-        return;
-      }
-
-      sent++;
-
-      if (sent % 10 === 0 || sent === total) {
-        console.log(`Inserted ${sent}/${total}`);
-      }
-
-      const elapsed = performance.now() - start;
-      window.loadTestControl.timerId = setTimeout(sendNext, nextDelay(elapsed));
+    if (phase !== "answering") {
+      console.error("Game must be in answering phase before load testing.");
+      return;
     }
 
-    sendNext();
+    try {
+      console.log(
+        `Starting clean load test for ${total} players on round ${round}`,
+      );
+
+      await clearOldLoadTestData(round);
+
+      const seededPlayers = await seedPlayers(total);
+
+      if (!seededPlayers.length) {
+        console.error("No fake players were seeded.");
+        return;
+      }
+
+      const playersForAnswers = shuffle(seededPlayers);
+
+      let sent = 0;
+      const start = performance.now();
+
+      loadTestControl.isRunning = true;
+      loadTestControl.timerId = null;
+
+      async function sendNext() {
+        if (!loadTestControl.isRunning) return;
+
+        if (sent >= playersForAnswers.length) {
+          loadTestControl.isRunning = false;
+          loadTestControl.timerId = null;
+          console.log(
+            `Done inserting ${playersForAnswers.length}/${playersForAnswers.length} answers`,
+          );
+          return;
+        }
+
+        const player = playersForAnswers[sent];
+
+        const row = {
+          name: player.name,
+          table_code: player.table_code,
+          answer: randomAnswer(),
+          round_number: round,
+        };
+
+        const { error } = await client.from("answers").insert([row]);
+
+        if (error) {
+          console.error(`Answer insert failed at ${sent + 1}:`, error);
+          stopLoadTestInternal();
+          return;
+        }
+
+        sent++;
+
+        if (sent % 10 === 0 || sent === playersForAnswers.length) {
+          console.log(`Inserted ${sent}/${playersForAnswers.length} answers`);
+        }
+
+        const elapsed = performance.now() - start;
+        const remaining = playersForAnswers.length - sent;
+        const nextDelay = getAdaptiveDelay(elapsed, remaining, totalDurationMs);
+
+        loadTestControl.timerId = setTimeout(sendNext, nextDelay);
+      }
+
+      sendNext();
+    } catch (err) {
+      console.error("simulateRoundLoadTest failed:", err);
+      stopLoadTestInternal();
+    }
   };
 }

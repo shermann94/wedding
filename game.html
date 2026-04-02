@@ -56,10 +56,17 @@
       </div>
 
       <div class="scenario-card" id="winner-card" style="display: none">
-        <h2>🏆 Best Marriage Advice</h2>
-        <p id="winner-answer"></p>
-        <p id="winner-player"></p>
-        <p id="winner-reason"></p>
+        <div id="winner-loading" style="display: none">
+          <div class="winner-inline-loader"></div>
+          <p id="winner-loading-text">AI is choosing the funniest answer.</p>
+        </div>
+
+        <div id="winner-content">
+          <h2 id="winner-title">🏆 Best Marriage Advice</h2>
+          <p id="winner-answer"></p>
+          <p id="winner-player"></p>
+          <p id="winner-reason"></p>
+        </div>
       </div>
 
       <div class="scenario-card" id="leaderboard-card" style="display: none">

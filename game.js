@@ -139,10 +139,7 @@ function renderAnswerCount() {
   const answerCountEl = document.getElementById("answer-count");
   if (!answerCountEl) return;
 
-  if (
-    currentGameState.phase === "waiting" ||
-    currentGameState.phase === "leaderboard"
-  ) {
+  if (currentGameState.phase !== "answering") {
     answerCountEl.style.display = "none";
     return;
   }

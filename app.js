@@ -356,11 +356,43 @@ async function joinGame() {
     */
 
     //Check existing player
+    /*
     const { data: existingPlayer, error: existingError } = await client
       .from("players")
       .select("*")
       .eq("player_token", playerToken)
       .maybeSingle();
+      */
+    let existingPlayer = null;
+
+    // 1. Try token first
+    if (playerToken) {
+      const { data } = await client
+        .from("players")
+        .select("*")
+        .eq("player_token", playerToken)
+        .maybeSingle();
+
+      existingPlayer = data;
+    }
+
+    // 2. Fallback: name + table + room
+    if (!existingPlayer) {
+      const { data } = await client
+        .from("players")
+        .select("*")
+        .eq("name", playerName)
+        .eq("table_code", canonicalTableCode)
+        .eq("room_code", rawRoomCode)
+        .maybeSingle();
+
+      existingPlayer = data;
+
+      // ✅ restore token if found
+      if (existingPlayer?.player_token) {
+        localStorage.setItem("playerToken", existingPlayer.player_token);
+      }
+    }
 
     //Phase Check
     if (game.phase !== "waiting" && !existingPlayer) {
@@ -369,9 +401,11 @@ async function joinGame() {
       return;
     }
 
+    /*
     if (existingError) {
       console.error("Existing player lookup error:", existingError);
     }
+    */
 
     if (!existingPlayer) {
       const { error } = await client.from("players").insert([

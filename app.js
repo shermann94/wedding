@@ -208,6 +208,23 @@ window.onload = async function () {
     hideAllPlayerScreens();
     showPlayerLoading(true);
 
+    const token = localStorage.getItem("playerToken");
+
+    if (token) {
+      const { data: player, error } = await client
+        .from("players")
+        .select("*")
+        .eq("player_token", token)
+        .maybeSingle();
+
+      if (player) {
+        localStorage.setItem("playerName", player.name);
+        localStorage.setItem("tableCode", player.table_code);
+        localStorage.setItem("roomCode", player.room_code);
+        localStorage.setItem("joined", "true");
+      }
+    }
+
     if (localStorage.getItem("joined") !== "true") {
       document.getElementById("join-screen").style.display = "block";
       return;
@@ -273,12 +290,13 @@ async function joinGame() {
       alert("Failed to load game settings.");
       return;
     }
-
+    /* old placement of waiting
     if (game.phase !== "waiting") {
       document.getElementById("join-error").innerText =
         "❌ The game has already started.";
       return;
     }
+    */
 
     const playerName = document.getElementById("name").value.trim();
     const rawTableInput = document.getElementById("table").value;
@@ -286,6 +304,14 @@ async function joinGame() {
       .getElementById("roomcode")
       .value.trim()
       .toUpperCase();
+
+    // Player Token Logic
+    let playerToken = localStorage.getItem("playerToken");
+
+    if (!playerToken) {
+      playerToken = crypto.randomUUID();
+      localStorage.setItem("playerToken", playerToken);
+    }
 
     if (!playerName || !rawTableInput || !enteredRoomCode) {
       alert("Please fill in your name, table number and room code.");
@@ -319,6 +345,7 @@ async function joinGame() {
     if (isRoomCodeWrong) setFieldError("roomcode", "❌ Wrong room code.");
     if (isTableWrong || isRoomCodeWrong) return;
 
+    /* Old identification
     const { data: existingPlayer, error: existingError } = await client
       .from("players")
       .select("id")
@@ -326,30 +353,51 @@ async function joinGame() {
       .eq("table_code", canonicalTableCode)
       .eq("room_code", rawRoomCode)
       .maybeSingle();
+    */
+
+    //Check existing player
+    const { data: existingPlayer, error: existingError } = await client
+      .from("players")
+      .select("*")
+      .eq("player_token", playerToken)
+      .maybeSingle();
+
+    //Phase Check
+    if (game.phase !== "waiting" && !existingPlayer) {
+      document.getElementById("join-error").innerText =
+        "❌ The game has already started.";
+      return;
+    }
 
     if (existingError) {
       console.error("Existing player lookup error:", existingError);
     }
 
     if (!existingPlayer) {
-      const { error } = await client.from("players").insert([
-        {
-          name: playerName,
-          table_code: canonicalTableCode,
-          room_code: rawRoomCode,
-        },
-      ]);
+      const { error } = await client
+        .from("players")
+        .insert([
+          {
+            name: playerName,
+            table_code: canonicalTableCode,
+            room_code: rawRoomCode,
+            player_token: playerToken,
+          },
+        ])
+        .select()
+        .single();
 
       if (error) {
         console.error("Join error:", error);
         alert("Unable to join game: " + error.message);
         return;
       }
+      finalPlayer = data;
     }
 
-    localStorage.setItem("playerName", playerName);
-    localStorage.setItem("tableCode", canonicalTableCode);
-    localStorage.setItem("roomCode", rawRoomCode);
+    localStorage.setItem("playerName", finalPlayer.name);
+    localStorage.setItem("tableCode", finalPlayer.table_code);
+    localStorage.setItem("roomCode", finalPlayer.room_code);
     localStorage.setItem("joined", "true");
     localStorage.removeItem("submittedRound");
 

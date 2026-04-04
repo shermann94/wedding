@@ -374,30 +374,34 @@ async function joinGame() {
     }
 
     if (!existingPlayer) {
-      const { error } = await client
-        .from("players")
-        .insert([
-          {
-            name: playerName,
-            table_code: canonicalTableCode,
-            room_code: rawRoomCode,
-            player_token: playerToken,
-          },
-        ])
-        .select()
-        .single();
+      const { error } = await client.from("players").insert([
+        {
+          name: playerName,
+          table_code: canonicalTableCode,
+          room_code: rawRoomCode,
+          player_token: playerToken,
+        },
+      ]);
 
       if (error) {
         console.error("Join error:", error);
         alert("Unable to join game: " + error.message);
         return;
       }
-      finalPlayer = data;
     }
 
-    localStorage.setItem("playerName", finalPlayer.name);
-    localStorage.setItem("tableCode", finalPlayer.table_code);
-    localStorage.setItem("roomCode", finalPlayer.room_code);
+    if (existingPlayer) {
+      // returning player → use DB values
+      localStorage.setItem("playerName", existingPlayer.name);
+      localStorage.setItem("tableCode", existingPlayer.table_code);
+      localStorage.setItem("roomCode", existingPlayer.room_code);
+    } else {
+      // new player → use input
+      localStorage.setItem("playerName", playerName);
+      localStorage.setItem("tableCode", canonicalTableCode);
+      localStorage.setItem("roomCode", rawRoomCode);
+    }
+
     localStorage.setItem("joined", "true");
     localStorage.removeItem("submittedRound");
 

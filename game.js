@@ -158,6 +158,12 @@ function scheduleAnswerCountRefresh() {
 }
 
 function setPhaseUI(phase) {
+  const playerList = document.getElementById("player-list");
+
+  // ✅ control visibility in ONE place
+  if (playerList) {
+    playerList.style.display = phase === "waiting" ? "grid" : "none";
+  }
   const startBtn = document.getElementById("start-game-btn");
   const evaluateBtn = document.getElementById("evaluate-btn");
   const nextBtn = document.getElementById("next-round-btn");
@@ -285,18 +291,19 @@ async function loadGame() {
 
 async function updatePlayerCount() {
   try {
-    const { count, error } = await client
-      .from("players")
-      .select("*", { count: "exact", head: true });
+    const { data, error } = await client.from("players").select("*");
 
     if (error) {
       console.error("Player count error:", error);
       return;
     }
 
-    livePlayerCount = count ?? 0;
+    livePlayerCount = data?.length || 0;
     document.getElementById("player-count").innerText =
       `${livePlayerCount} players joined`;
+
+    // ✅ NEW: render player list
+    renderPlayerList(data || []);
 
     renderAnswerCount();
   } catch (err) {
@@ -612,6 +619,9 @@ async function resetGame() {
     liveAnswerCount = 0;
     livePlayerCount = 0;
     document.getElementById("answers").innerHTML = "";
+    const playerList = document.getElementById("player-list");
+    if (playerList) playerList.innerHTML = ""; // ✅ CLEAR UI
+
     nextLane = 0;
     clearWinnerCard();
     document.getElementById("leaderboard-list").innerHTML = "";
@@ -1021,4 +1031,32 @@ function startHostCountdown(endTimeString) {
 
     timerEl.innerText = `⏳ ${diff}s left`;
   }, 300);
+}
+
+function renderPlayerList(players) {
+  const container = document.getElementById("player-list");
+  if (!container) return;
+
+  // ✅ ALWAYS clear before rendering
+  container.innerHTML = "";
+  const existing = new Set(
+    Array.from(container.children).map((c) => c.dataset.key),
+  );
+
+  players.forEach((p) => {
+    const key = p.id;
+
+    if (existing.has(String(key))) return;
+
+    const div = document.createElement("div");
+    div.className = "player-card";
+    div.dataset.key = key;
+
+    div.innerHTML = `
+    <img src="${p.avatar}" class="player-avatar" />
+    <div class="player-name">${p.name}</div>
+  `;
+
+    container.appendChild(div);
+  });
 }

@@ -474,7 +474,7 @@ textarea {
 /* LOGO */
 
 .game-logo {
-  width: 420px;
+  width: 320px;
   max-width: 90%;
   margin-top: 30px;
   display: block;
@@ -1020,4 +1020,65 @@ body.game-started .game-logo {
 
 #avatar-screen .submit-btn {
   margin-top: 20px;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.player-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.player-card {
+  background: white;
+  border-radius: 16px;
+  padding: 10px 6px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+
+  animation: popIn 0.35s ease;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.player-card {
+  animation: popIn 0.35s ease;
+  animation-fill-mode: both;
+}
+
+#lobby .submit-btn {
+  margin-top: 16px;
+}
+
+.player-list {
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.player-list.hide {
+  opacity: 0;
+  transform: translateY(-20px);
 }

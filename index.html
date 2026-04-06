@@ -69,6 +69,39 @@
       </div>
     </div>
 
+    <div id="avatar-screen" class="container" style="display: none">
+      <h1 class="title">Choose Your Avatar</h1>
+      <p class="avatar-note">
+        🐟 Too slow? No worries — Magikarp will represent you 😄
+      </p>
+      <div id="avatar-list" class="avatar-grid">
+        <img src="assets/avatars/Naruto.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Saitama.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Hinata.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Kakashi.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Magikarp.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Nami.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Gaara.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Squirtle.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Luffy.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Sasuke.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Usopp.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Sakura.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Pikachu.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Panda.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Chopper.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Tenten.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Eevee.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Zoro.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Cat.png" onclick="selectAvatar(this)" />
+        <img src="assets/avatars/Shikamaru.png" onclick="selectAvatar(this)" />
+      </div>
+
+      <button class="submit-btn" onclick="confirmAvatar()">
+        Confirm Avatar
+      </button>
+    </div>
+
     <div id="waiting-screen" style="display: none" class="container">
       <h1 class="title">Waiting for host to start...</h1>
 
@@ -79,6 +112,7 @@
 
     <div id="answer-screen" style="display: none" class="container">
       <div id="player-info" class="player-info" style="display: none">
+        <img id="player-avatar" class="player-avatar" />
         <span id="player-name-display"></span>
         <span id="player-table-display"></span>
       </div>

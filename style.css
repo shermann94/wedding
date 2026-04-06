@@ -114,21 +114,23 @@ textarea {
 /* BUTTON */
 
 .submit-btn {
-  width: 100%;
-  padding: 16px;
-  font-size: 18px;
-  font-weight: bold;
-  font-family: inherit;
-  border: none;
-  border-radius: 14px;
-  background: #ff6f91;
+  background: linear-gradient(135deg, #ff6b9d, #ff3d7f);
   color: white;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #d6336c;
+  transition: all 0.1s ease-in-out;
+  font-family: "Fredoka", sans-serif; /* ✅ ADD THIS */
 }
 
 .submit-btn:hover {
-  background: #ff5c84;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  opacity: 0.95;
+  transform: translateY(-1px);
 }
 
 .submit-btn:active {
@@ -963,4 +965,59 @@ body.game-started .game-logo {
   100% {
     transform: translateY(0px);
   }
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+
+  background-color: white; /* ✅ THIS is what you want */
+  padding: 16px; /* space inside */
+  border-radius: 16px; /* rounded corners */
+}
+
+.avatar-grid {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.avatar-grid img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  cursor: pointer;
+
+  border: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.avatar-grid img.selected {
+  border: 3px solid #ff4d88;
+  border-radius: 50%; /* ✅ ensure still circle */
+  transform: scale(1.08);
+}
+
+.player-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.avatar-note {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.85); /* soft white */
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #555;
+  margin: 10px auto 16px;
+  text-align: center;
+}
+
+#avatar-screen .submit-btn {
+  margin-top: 20px;
 }

@@ -7,6 +7,81 @@ let isSubmitting = false;
 let isBooting = true;
 let isBusy = false;
 let countdownInterval = null;
+let selectedAvatar = null;
+
+async function refreshAvatarFromDB() {
+  const token = localStorage.getItem("playerToken");
+  if (!token) return;
+
+  const { data: player } = await client
+    .from("players")
+    .select("avatar")
+    .eq("player_token", token)
+    .maybeSingle();
+
+  if (player?.avatar) {
+    localStorage.setItem("avatar", player.avatar);
+    updatePlayerInfoUI();
+  }
+}
+
+function selectAvatar(img) {
+  // remove previous selection
+  document
+    .querySelectorAll("#avatar-list img")
+    .forEach((el) => el.classList.remove("selected"));
+
+  // highlight selected
+  img.classList.add("selected");
+
+  // store selected avatar
+  selectedAvatar = img.getAttribute("src");
+
+  console.log("Selected avatar:", selectedAvatar);
+}
+
+async function confirmAvatar() {
+  if (!selectedAvatar) {
+    alert("Please select an avatar!");
+    return;
+  }
+
+  // get player info from localStorage
+  const playerToken = localStorage.getItem("playerToken");
+  const playerName = localStorage.getItem("playerName");
+  const tableCode = localStorage.getItem("tableCode");
+
+  console.log("Using token:", playerToken);
+  console.log("Fallback:", playerName, tableCode);
+
+  const playerId = localStorage.getItem("playerId");
+
+  console.log("Using playerId:", playerId);
+
+  const { data, error } = await client
+    .from("players")
+    .update({ avatar: selectedAvatar })
+    .eq("id", playerId)
+    .select();
+
+  console.log("Update result:", data);
+  console.log("Update error:", error);
+
+  if (error) {
+    console.error("Avatar save error:", error);
+    alert("Failed to save avatar");
+    return;
+  }
+
+  // save locally
+  localStorage.setItem("avatar", selectedAvatar);
+  localStorage.setItem("avatarConfirmed", "true");
+
+  console.log("Avatar confirmed:", selectedAvatar);
+
+  // go to next screen
+  showWaiting();
+}
 
 function showPlayerLoading(show) {
   const loading = document.getElementById("player-loading-screen");
@@ -19,6 +94,7 @@ function hideAllPlayerScreens() {
   document.getElementById("waiting-screen").style.display = "none";
   document.getElementById("answer-screen").style.display = "none";
   document.getElementById("submitted-screen").style.display = "none";
+  document.getElementById("avatar-screen").style.display = "none";
 }
 
 function setPlayerBusy(value, options = {}) {
@@ -46,6 +122,10 @@ function clearGameLocalState() {
   localStorage.removeItem("roomCode");
   localStorage.removeItem("joined");
   localStorage.removeItem("submittedRound");
+  // ✅ ADD THESE (this is your fix)
+  localStorage.removeItem("avatar");
+  localStorage.removeItem("playerId");
+  localStorage.removeItem("playerToken");
 }
 
 function setSubmitButtonLoading(isLoading) {
@@ -155,11 +235,16 @@ async function getCanonicalTableCode(inputCode) {
 function updatePlayerInfoUI() {
   const playerName = localStorage.getItem("playerName");
   const tableCode = localStorage.getItem("tableCode");
+  const avatar = localStorage.getItem("avatar");
+  const avatarEl = document.getElementById("player-avatar");
+
+  if (avatar && avatarEl) {
+    avatarEl.src = avatar;
+  }
 
   if (playerName && tableCode) {
     document.getElementById("player-info").style.display = "block";
-    document.getElementById("player-name-display").innerText =
-      "👤 " + playerName;
+    document.getElementById("player-name-display").innerText = playerName;
     document.getElementById("player-table-display").innerText =
       " — Table " + tableCode;
   }
@@ -222,6 +307,13 @@ window.onload = async function () {
         localStorage.setItem("tableCode", player.table_code);
         localStorage.setItem("roomCode", player.room_code);
         localStorage.setItem("joined", "true");
+        localStorage.setItem("playerId", player.id); // ✅ ADD THIS
+
+        if (player?.avatar && player.avatar !== "null") {
+          localStorage.setItem("avatar", player.avatar);
+        } else {
+          localStorage.removeItem("avatar");
+        }
       }
     }
 
@@ -241,6 +333,16 @@ window.onload = async function () {
     if (error || !data) {
       console.error("Failed to load game state on refresh:", error);
       showWaiting();
+      localStorage.removeItem("submittedRound");
+      return;
+    }
+
+    // ✅ check if avatar exists
+    const avatarConfirmed = localStorage.getItem("avatarConfirmed");
+
+    if (avatarConfirmed !== "true" && data.phase === "waiting") {
+      hideAllPlayerScreens();
+      document.getElementById("avatar-screen").style.display = "block";
       return;
     }
 
@@ -250,6 +352,8 @@ window.onload = async function () {
     }
 
     if (data.phase === "answering") {
+      await refreshAvatarFromDB(); // ✅ ADD THIS
+
       const alreadySubmitted = await hasSubmittedForRound(data.round_number);
 
       if (alreadySubmitted) {
@@ -407,22 +511,35 @@ async function joinGame() {
     }
     */
 
+    let playerId = null;
+
     if (!existingPlayer) {
-      const { error } = await client.from("players").insert([
-        {
-          name: playerName,
-          table_code: canonicalTableCode,
-          room_code: rawRoomCode,
-          player_token: playerToken,
-        },
-      ]);
+      const { data, error } = await client
+        .from("players")
+        .insert([
+          {
+            name: playerName,
+            table_code: canonicalTableCode,
+            room_code: rawRoomCode,
+            player_token: playerToken,
+          },
+        ])
+        .select()
+        .single();
 
       if (error) {
         console.error("Join error:", error);
         alert("Unable to join game: " + error.message);
         return;
       }
+
+      playerId = data.id;
+    } else {
+      playerId = existingPlayer.id;
     }
+
+    // ✅ ADD THIS LINE
+    localStorage.setItem("playerId", playerId);
 
     if (existingPlayer) {
       // returning player → use DB values
@@ -438,11 +555,23 @@ async function joinGame() {
 
     localStorage.setItem("joined", "true");
     localStorage.removeItem("submittedRound");
+    localStorage.removeItem("avatarConfirmed"); // ✅ ADD THIS
 
     document.getElementById("table").value = canonicalTableCode;
 
     updatePlayerInfoUI();
-    showWaiting();
+
+    // ✅ check if avatar already selected
+    const existingAvatar = localStorage.getItem("avatar");
+
+    if (existingAvatar && existingAvatar !== "null") {
+      showWaiting();
+      return;
+    }
+
+    // ✅ show avatar selection screen
+    hideAllPlayerScreens();
+    document.getElementById("avatar-screen").style.display = "block";
   } catch (err) {
     console.error("Unexpected join error:", err);
     alert("Something went wrong while joining.");
@@ -511,6 +640,20 @@ client
   .subscribe();
 
 async function showAnswerScreen(prefetchedScenario) {
+  // ✅ ADD THIS FIRST
+  const token = localStorage.getItem("playerToken");
+
+  if (token) {
+    const { data: player } = await client
+      .from("players")
+      .select("avatar")
+      .eq("player_token", token)
+      .maybeSingle();
+
+    if (player?.avatar) {
+      localStorage.setItem("avatar", player.avatar);
+    }
+  }
   // ✅ SHOW input again for new round
   const inputEl = document.getElementById("answer");
   if (inputEl) inputEl.style.display = "block";

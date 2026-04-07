@@ -966,26 +966,31 @@ body.game-started .game-logo {
     transform: translateY(0px);
   }
 }
+/* AVATAR GRID FIX */
+#avatar-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
   gap: 12px;
   margin-top: 20px;
-
+  flex: 1; /* take available height */
+  overflow: hidden; /* 🚫 remove scroll */
+  padding: 10px 0;
   background-color: white; /* ✅ THIS is what you want */
   padding: 16px; /* space inside */
   border-radius: 16px; /* rounded corners */
 }
 
-.avatar-grid {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
 .avatar-grid img {
   width: 100%;
   aspect-ratio: 1 / 1;
+  object-fit: contain;
   border-radius: 12px;
   cursor: pointer;
 

@@ -663,6 +663,8 @@ button:disabled,
   align-items: center;
   justify-content: center;
   margin-top: 40px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 /* TITLE */
@@ -1008,7 +1010,6 @@ body.game-started .game-logo {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  margin-right: 8px;
   vertical-align: middle;
 }
 
@@ -1046,11 +1047,28 @@ body.game-started .game-logo {
 }
 
 .player-card {
+  width: 100%; /* ✅ IMPORTANT */
+  max-width: 200px; /* keeps it from stretching too much */
+  margin: 0 auto; /* centers inside grid cell */
+  max-width: 100%; /* prevent overflow */
+  padding: 10px 16px; /* slightly nicer spacing */
   background: white;
   border-radius: 16px;
   padding: 10px 6px;
   text-align: center;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  gap: 8px;
+  height: 56px; /* ✅ IMPORTANT */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+  font-size: 14px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   animation: popIn 0.35s ease;
 }
@@ -1079,6 +1097,17 @@ body.game-started .game-logo {
 }
 
 .player-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+
+  width: 100%;
+  margin: 64px auto 0;
+
+  justify-content: center;
+
+  max-height: calc((56px * 3) + (10px * 2));
+  overflow: hidden;
   transition:
     opacity 0.25s ease,
     transform 0.25s ease;

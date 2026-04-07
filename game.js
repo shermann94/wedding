@@ -1037,26 +1037,83 @@ function renderPlayerList(players) {
   const container = document.getElementById("player-list");
   if (!container) return;
 
-  // ✅ ALWAYS clear before rendering
-  container.innerHTML = "";
-  const existing = new Set(
-    Array.from(container.children).map((c) => c.dataset.key),
+  // 🔥 calculate how many can fit
+  const containerWidth = container.getBoundingClientRect().width || 700;
+  const cardMinWidth = 120;
+  const gap = 10;
+
+  const columns = Math.max(
+    1,
+    Math.floor((containerWidth + gap) / (cardMinWidth + gap)),
   );
 
-  players.forEach((p) => {
-    const key = p.id;
+  const maxRows = 3;
+  const maxPlayers = 12;
 
-    if (existing.has(String(key))) return;
+  // ✅ only keep newest players (Kahoot behavior)
+  const latestPlayers = players.slice(-maxPlayers);
 
+  // ✅ clear UI
+  container.innerHTML = "";
+
+  latestPlayers.reverse().forEach((p) => {
     const div = document.createElement("div");
     div.className = "player-card";
-    div.dataset.key = key;
 
     div.innerHTML = `
-    <img src="${p.avatar}" class="player-avatar" />
-    <div class="player-name">${p.name}</div>
-  `;
+      <img src="${p.avatar}" class="player-avatar" />
+      <div class="player-name">${p.name}</div>
+    `;
 
     container.appendChild(div);
   });
+}
+
+window.addTestPlayers = async function addTestPlayers(count = 5) {
+  const fakePlayers = [];
+
+  for (let i = 0; i < count; i++) {
+    fakePlayers.push({
+      name: `Guest ${Math.floor(Math.random() * 1000)}`,
+      table_code: `T${Math.floor(Math.random() * 20) + 1}`,
+      room_code: await getRoomCode(),
+      player_token: crypto.randomUUID(),
+      avatar: getRandomAvatar(),
+    });
+  }
+
+  const { error } = await client.from("players").insert(fakePlayers);
+
+  if (error) {
+    console.error("Failed to add test players:", error);
+  } else {
+    console.log(`✅ Added ${count} test players`);
+  }
+};
+
+async function getRoomCode() {
+  const { data } = await client
+    .from("game_state")
+    .select("room_code")
+    .eq("id", 1)
+    .single();
+
+  return data?.room_code;
+}
+
+function getRandomAvatar() {
+  const avatars = [
+    "assets/avatars/Naruto.png",
+    "assets/avatars/Saitama.png",
+    "assets/avatars/Hinata.png",
+    "assets/avatars/Kakashi.png",
+    "assets/avatars/Magikarp.png",
+    "assets/avatars/Nami.png",
+    "assets/avatars/Gaara.png",
+    "assets/avatars/Squirtle.png",
+    "assets/avatars/Luffy.png",
+    "assets/avatars/Sasuke.png",
+  ];
+
+  return avatars[Math.floor(Math.random() * avatars.length)];
 }

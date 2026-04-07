@@ -75,7 +75,7 @@ button:disabled,
   padding: 14px 16px;
   border: none;
   border-radius: 16px;
-  font-size: 18px;
+  font-size: clamp(14px, 4vw, 18px);
   font-weight: 500;
   font-family: "Fredoka", sans-serif;
   box-sizing: border-box;
@@ -99,7 +99,7 @@ button:disabled,
 
 .input::placeholder {
   font-family: "Fredoka", sans-serif;
-  font-size: 18px;
+  font-size: clamp(13px, 3.5vw, 18px);
   font-weight: 500;
   color: #6b6b6b;
 }
@@ -1025,6 +1025,7 @@ body.game-started .game-logo {
 
 #avatar-screen .submit-btn {
   margin-top: 20px;
+  margin-bottom: 24px; /* 👈 spacing from screen edge */
 }
 
 .player-item {

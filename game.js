@@ -4,6 +4,12 @@ const supabaseKey =
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 window.client = client;
 
+const adminKey = localStorage.getItem("adminKey");
+
+if (!adminKey) {
+  window.location.replace("login.html");
+}
+
 let currentGameState = {
   round_number: 1,
   phase: "waiting",
@@ -1116,4 +1122,10 @@ function getRandomAvatar() {
   ];
 
   return avatars[Math.floor(Math.random() * avatars.length)];
+}
+
+function logout() {
+  localStorage.removeItem("adminKey");
+  localStorage.removeItem("adminName");
+  window.location.href = "login.html";
 }

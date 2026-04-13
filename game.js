@@ -16,8 +16,6 @@ let currentGameState = {
   scenario: "Waiting for round to start...",
 };
 
-let answerCountRefreshTimeout = null;
-let liveAnswerCount = 0;
 let livePlayerCount = 0;
 let isBooting = true;
 let isBusy = false;
@@ -141,41 +139,48 @@ function showNoWinnerCard() {
     "There are no eligible winners this round.";
 }
 
-function renderAnswerCount() {
-  const answerCountEl = document.getElementById("answer-count");
-  if (!answerCountEl) return;
-
-  if (currentGameState.phase !== "answering") {
-    answerCountEl.style.display = "none";
-    return;
-  }
-
-  answerCountEl.style.display = "flex";
-  answerCountEl.innerText = `${liveAnswerCount} / ${livePlayerCount} answers received`;
-}
-
-function scheduleAnswerCountRefresh() {
-  if (answerCountRefreshTimeout) return;
-
-  answerCountRefreshTimeout = setTimeout(async () => {
-    answerCountRefreshTimeout = null;
-    await updateAnswerCount();
-  }, 1000);
+function renderRoundLabel() {
+  const el = document.getElementById("round-label");
+  if (!el) return;
+  el.innerText = `Round ${currentGameState.round_number}`;
 }
 
 function setPhaseUI(phase) {
   const playerList = document.getElementById("player-list");
 
-  // ✅ control visibility in ONE place
   if (playerList) {
     playerList.style.display = phase === "waiting" ? "grid" : "none";
   }
+
   const startBtn = document.getElementById("start-game-btn");
   const evaluateBtn = document.getElementById("evaluate-btn");
   const nextBtn = document.getElementById("next-round-btn");
   const resetBtn = document.getElementById("reset-btn");
   const leaderboardBtn = document.getElementById("leaderboard-btn");
   const controls = getControlsEl();
+
+  const playerCountEl = document.getElementById("player-count");
+  const timerEl = document.getElementById("host-timer");
+  const roundLabelEl = document.getElementById("round-label");
+
+  // ✅ FIX: CONTROL TIMER IMMEDIATELY
+  if (timerEl) {
+    if (phase === "answering") {
+      timerEl.style.display = "flex";
+    } else {
+      timerEl.style.display = "none";
+      timerEl.innerText = "";
+    }
+  }
+
+  // ✅ FIX: CONTROL ROUND LABEL IMMEDIATELY
+  if (roundLabelEl) {
+    if (phase === "answering") {
+      roundLabelEl.style.display = "flex";
+    } else {
+      roundLabelEl.style.display = "none";
+    }
+  }
 
   hideAllHostPanels();
   controls.style.display = "flex";
@@ -213,17 +218,12 @@ function setPhaseUI(phase) {
     resetBtn.style.display = "inline-block";
   }
 
-  const playerCountEl = document.getElementById("player-count");
-
+  // player count
   if (playerCountEl) {
-    if (phase === "waiting") {
-      playerCountEl.style.display = "block";
-    } else {
-      playerCountEl.style.display = "none";
-    }
+    playerCountEl.style.display = phase === "waiting" ? "block" : "none";
   }
 
-  renderAnswerCount();
+  renderRoundLabel();
 }
 
 async function loadGame() {
@@ -264,7 +264,6 @@ async function loadGame() {
     document.getElementById("scenario").innerText = currentGameState.scenario;
 
     await updatePlayerCount();
-    await updateAnswerCount();
     setPhaseUI(data.phase);
 
     if (data.phase === "answering") {
@@ -310,47 +309,8 @@ async function updatePlayerCount() {
 
     // ✅ NEW: render player list
     renderPlayerList(data || []);
-
-    renderAnswerCount();
   } catch (err) {
     console.error("Unexpected player count error:", err);
-  }
-}
-
-async function updateAnswerCount() {
-  try {
-    if (
-      currentGameState.phase === "waiting" ||
-      currentGameState.phase === "leaderboard"
-    ) {
-      document.getElementById("answer-count").style.display = "none";
-      return;
-    }
-
-    const { count: playerCount, error: playerError } = await client
-      .from("players")
-      .select("*", { count: "exact", head: true });
-
-    if (playerError) {
-      console.error("Player count error:", playerError);
-      return;
-    }
-
-    const { count: answerCount, error: answerError } = await client
-      .from("answers")
-      .select("*", { count: "exact", head: true })
-      .eq("round_number", currentGameState.round_number);
-
-    if (answerError) {
-      console.error("Answer count error:", answerError);
-      return;
-    }
-
-    livePlayerCount = playerCount ?? 0;
-    liveAnswerCount = answerCount ?? 0;
-    renderAnswerCount();
-  } catch (err) {
-    console.error("Unexpected updateAnswerCount error:", err);
   }
 }
 
@@ -361,7 +321,6 @@ client
     { event: "*", schema: "public", table: "players" },
     async () => {
       await updatePlayerCount();
-      scheduleAnswerCountRefresh();
     },
   )
   .subscribe();
@@ -382,9 +341,6 @@ client
       }
 
       if (phase === "answering") {
-        const timerEl = document.getElementById("host-timer");
-        if (timerEl) timerEl.style.display = "flex";
-
         startHostCountdown(payload.new.round_ends_at);
       } else {
         if (hostCountdownInterval) clearInterval(hostCountdownInterval);
@@ -404,12 +360,9 @@ client
       document.getElementById("scenario").innerText = currentGameState.scenario;
 
       if (phase === "waiting") {
-        liveAnswerCount = 0;
         document.getElementById("answers").innerHTML = "";
         clearWinnerCard();
       }
-
-      await updateAnswerCount();
       setPhaseUI(phase);
 
       if (phase === "results") {
@@ -437,9 +390,6 @@ client
           currentGameState.phase === "answering"
         ) {
           spawnAnswerBubble(payload.new.answer);
-          liveAnswerCount += 1;
-          renderAnswerCount();
-          scheduleAnswerCountRefresh();
         }
       } catch (err) {
         console.error("Answer feed error:", err);
@@ -485,11 +435,9 @@ async function startGame() {
       return;
     }
 
-    liveAnswerCount = 0;
     document.getElementById("answers").innerHTML = "";
     nextLane = 0;
     clearWinnerCard();
-    await updateAnswerCount();
   } catch (err) {
     console.error("Unexpected startGame error:", err);
   } finally {
@@ -546,7 +494,6 @@ async function nextRound() {
     };
 
     document.getElementById("scenario").innerText = scenarioData.scenario;
-    liveAnswerCount = 0;
     setPhaseUI("answering");
 
     const now = new Date();
@@ -566,8 +513,6 @@ async function nextRound() {
       alert("Failed to start next round: " + updateError.message);
       return;
     }
-
-    await updateAnswerCount();
   } catch (err) {
     console.error("Unexpected nextRound error:", err);
   } finally {
@@ -622,7 +567,6 @@ async function resetGame() {
       return;
     }
 
-    liveAnswerCount = 0;
     livePlayerCount = 0;
     document.getElementById("answers").innerHTML = "";
     const playerList = document.getElementById("player-list");
@@ -668,8 +612,8 @@ function spawnAnswerBubble(text) {
 
   const bubbleHeight = bubble.offsetHeight;
   const laneLeft = laneIndex * laneWidth;
-  const startTop = boxHeight - bubbleHeight - 16;
-  const rise = startTop - 8;
+  const startTop = boxHeight - bubbleHeight - 24;
+  const rise = startTop - 24;
 
   bubble.style.left = `${laneLeft}px`;
   bubble.style.top = `${startTop}px`;
@@ -681,6 +625,27 @@ function spawnAnswerBubble(text) {
   setTimeout(() => {
     if (bubble.parentNode) bubble.remove();
   }, 3800);
+}
+
+async function getWinnerAvatar(playerName, tableCode) {
+  try {
+    const { data, error } = await client
+      .from("players")
+      .select("avatar")
+      .eq("name", playerName)
+      .eq("table_code", tableCode)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to load winner avatar:", error);
+      return null;
+    }
+
+    return data?.avatar || null;
+  } catch (err) {
+    console.error("Unexpected getWinnerAvatar error:", err);
+    return null;
+  }
 }
 
 async function renderLeaderboard() {
@@ -705,7 +670,7 @@ async function renderLeaderboard() {
       return;
     }
 
-    data.forEach((winner, index) => {
+    for (const [index, winner] of data.entries()) {
       const card = document.createElement("div");
       card.className = "leaderboard-item";
 
@@ -713,17 +678,27 @@ async function renderLeaderboard() {
         card.classList.add("leaderboard-item-last");
       }
 
+      const avatar = await getWinnerAvatar(
+        winner.player_name,
+        winner.table_code,
+      );
+
       card.innerHTML = `
-          <div class="leaderboard-top">
-            <div class="leaderboard-round">Round ${winner.round_number}</div>
-            <div class="leaderboard-table">Table ${winner.table_code}</div>
-          </div>
-          <div class="leaderboard-name">${winner.player_name}</div>
-          <div class="leaderboard-answer">“${winner.answer || ""}”</div>
-        `;
+    <div class="leaderboard-top">
+      <div class="leaderboard-round">Round ${winner.round_number}</div>
+      <div class="leaderboard-table">Table ${winner.table_code}</div>
+    </div>
+
+    <div class="leaderboard-winner-row">
+      ${avatar ? `<img src="${avatar}" class="leaderboard-avatar" alt="${winner.player_name}" />` : ""}
+      <div class="leaderboard-name">${winner.player_name}</div>
+    </div>
+
+    <div class="leaderboard-answer">“${winner.answer || ""}”</div>
+  `;
 
       list.appendChild(card);
-    });
+    }
   } catch (err) {
     console.error("Unexpected leaderboard render error:", err);
   }
@@ -773,13 +748,21 @@ async function loadWinnerForRound(round) {
       return;
     }
 
+    const avatar = await getWinnerAvatar(data.player_name, data.table_code);
+
     hideWinnerLoading();
     document.getElementById("winner-card").style.display = "flex";
     document.getElementById("winner-title").innerText =
       "🏆 Best Marriage Advice";
-    document.getElementById("winner-answer").innerText = `"${data.answer}"`;
+
+    document.getElementById("winner-answer").innerHTML = `
+  ${avatar ? `<img src="${avatar}" class="winner-avatar" alt="${data.player_name}" />` : ""}
+  <span>“${data.answer}”</span>
+`;
+
     document.getElementById("winner-player").innerText =
       `— ${data.player_name} (Table ${data.table_code})`;
+
     document.getElementById("winner-reason").innerText =
       `🤖 AI Judge: ${data.reason || "No reason provided."}`;
   } catch (err) {
@@ -831,6 +814,8 @@ async function evaluateAnswers() {
 
     if (allAnswers.length === 0) {
       showWinnerError("No valid answers to judge.");
+      currentGameState.phase = "results";
+      setPhaseUI("results");
       return null;
     }
 
@@ -1043,17 +1028,6 @@ function renderPlayerList(players) {
   const container = document.getElementById("player-list");
   if (!container) return;
 
-  // 🔥 calculate how many can fit
-  const containerWidth = container.getBoundingClientRect().width || 700;
-  const cardMinWidth = 120;
-  const gap = 10;
-
-  const columns = Math.max(
-    1,
-    Math.floor((containerWidth + gap) / (cardMinWidth + gap)),
-  );
-
-  const maxRows = 3;
   const maxPlayers = 12;
 
   // ✅ only keep newest players (Kahoot behavior)
@@ -1074,28 +1048,6 @@ function renderPlayerList(players) {
     container.appendChild(div);
   });
 }
-
-window.addTestPlayers = async function addTestPlayers(count = 5) {
-  const fakePlayers = [];
-
-  for (let i = 0; i < count; i++) {
-    fakePlayers.push({
-      name: `Guest ${Math.floor(Math.random() * 1000)}`,
-      table_code: `T${Math.floor(Math.random() * 20) + 1}`,
-      room_code: await getRoomCode(),
-      player_token: crypto.randomUUID(),
-      avatar: getRandomAvatar(),
-    });
-  }
-
-  const { error } = await client.from("players").insert(fakePlayers);
-
-  if (error) {
-    console.error("Failed to add test players:", error);
-  } else {
-    console.log(`✅ Added ${count} test players`);
-  }
-};
 
 async function getRoomCode() {
   const { data } = await client

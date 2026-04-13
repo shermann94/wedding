@@ -288,4 +288,26 @@ if (location.hostname === "localhost") {
       stopLoadTestInternal();
     }
   };
+
+  window.addTestPlayers = async function addTestPlayers(count = 5) {
+    const fakePlayers = [];
+
+    for (let i = 0; i < count; i++) {
+      fakePlayers.push({
+        name: `Guest ${Math.floor(Math.random() * 1000)}`,
+        table_code: `T${Math.floor(Math.random() * 20) + 1}`,
+        room_code: await getRoomCode(),
+        player_token: crypto.randomUUID(),
+        avatar: getRandomAvatar(),
+      });
+    }
+
+    const { error } = await client.from("players").insert(fakePlayers);
+
+    if (error) {
+      console.error("Failed to add test players:", error);
+    } else {
+      console.log(`✅ Added ${count} test players`);
+    }
+  };
 }

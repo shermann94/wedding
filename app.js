@@ -36,8 +36,6 @@ function selectAvatar(img) {
 
   // store selected avatar
   selectedAvatar = img.getAttribute("src");
-
-  console.log("Selected avatar:", selectedAvatar);
 }
 
 async function confirmAvatar() {
@@ -46,26 +44,13 @@ async function confirmAvatar() {
     return;
   }
 
-  // get player info from localStorage
-  const playerToken = localStorage.getItem("playerToken");
-  const playerName = localStorage.getItem("playerName");
-  const tableCode = localStorage.getItem("tableCode");
-
-  console.log("Using token:", playerToken);
-  console.log("Fallback:", playerName, tableCode);
-
   const playerId = localStorage.getItem("playerId");
 
-  console.log("Using playerId:", playerId);
-
-  const { data, error } = await client
+  const { error } = await client
     .from("players")
     .update({ avatar: selectedAvatar })
     .eq("id", playerId)
     .select();
-
-  console.log("Update result:", data);
-  console.log("Update error:", error);
 
   if (error) {
     console.error("Avatar save error:", error);
@@ -76,8 +61,6 @@ async function confirmAvatar() {
   // save locally
   localStorage.setItem("avatar", selectedAvatar);
   localStorage.setItem("avatarConfirmed", "true");
-
-  console.log("Avatar confirmed:", selectedAvatar);
 
   // go to next screen
   showWaiting();

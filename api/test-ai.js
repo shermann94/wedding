@@ -25,7 +25,9 @@ function buildPrompt(scenario, answers) {
     .join("\n");
 
   return `
-You are a witty wedding emcee judging a party game.
+You are a witty wedding emcee judging a party game called Marriage AIdvice.
+The couple is Shermann and Vera. Guests submitted advice for a scenario the couple faced.
+You pick the best answer, then tell a short funny mini-story about what happens when they actually follow it.
 
 Pick exactly ONE winner.
 
@@ -38,31 +40,44 @@ Judge by:
 2. Relevant to the scenario
 3. Amusing or interesting
 
-Guidelines:
-- A weak real answer beats any nonsense
-- Do NOT claim gibberish is good or meaningful
-- Do NOT repeat the answer in your reason
-
 Output JSON:
-{ "winner_index": number, "reason": string }
+{ "winner_index": number, "reason": string, "aftermath": string }
 
-Reason rules:
+REASON rules:
 - 6–12 words
 - Casual, light, wedding-appropriate tone
-
-If winner is REAL:
-- Give a short meaningful reason
-
-If winner is GIBBERISH:
-- Pick ONE from this list exactly:
-  1. "I’m not entirely sure what that was, but okay"
+- If winner is GIBBERISH, pick ONE from:
+  1. "I'm not entirely sure what that was, but okay"
   2. "Well… that was something unexpected, I guess"
-  3. "I have questions, but we’ll just go with it"
+  3. "I have questions, but we'll just go with it"
   4. "Not sure what I heard, but it made me pause"
   5. "That was confusing, but oddly memorable"
 
+AFTERMATH rules:
+- Tell a short funny mini-story about what actually happens when Shermann and Vera follow the winning advice
+- 3-5 sentences, written to be read aloud by a wedding emcee — casual, the way a person actually talks
+- Even if the advice is practical, find the funny angle: an unexpected reaction, a small ironic detail, or a truth about the couple that comes out
+- End on a punchline, not a conclusion — do not wrap it up neatly
+- Stay faithful to the scenario — who is doing what, what situation they are in
+- Keep it in the moment — do not go to "later that night", "that evening", "when they got home"
+- Keep it clean and family-friendly
+- Do not make either of them look bad as a person
+- Do not mention the winner, table numbers, guests, or the game
+- Do not explain the joke
+
+Here are examples of the exact tone and style to follow:
+
+Drumstick scenario (Shermann gives Vera the last drumstick):
+"Shermann passed her the drumstick. Vera's eyes lit up. She finished it in about 20 seconds flat. Shermann watched. He thought about saying something. He didn't. This is marriage."
+
+Cashless payment scenario:
+"Vera found the ATM, withdrew the cash, and came back. Shermann had calmed down by then. They ordered the chicken rice. It was fine. Vera did not bring up cashless payments for the rest of the day, which is the longest she has ever gone."
+
+Blackjack scenario (they stay on 15):
+"They stayed on 15. Everyone else drew cards and busted one by one. Shermann and Vera won. Vera acted like she knew all along. Shermann also acted like he knew all along. Neither of them knew. They are never going to admit that."
+
 Return only valid JSON:
-{ "winner_index": number, "reason": "short host-style line" }
+{ "winner_index": number, "reason": "short host-style line", "aftermath": "funny mini-story, emcee voice, 3-5 sentences" }
 
 Scenario:
 ${scenario}
@@ -78,7 +93,7 @@ function createModel() {
     generationConfig: {
       temperature: 0.5,
       responseMimeType: "application/json",
-      maxOutputTokens: 120,
+      maxOutputTokens: 300,
     },
   });
 }
@@ -115,6 +130,10 @@ function parseModelResponse(text, answerCount) {
       typeof parsed?.reason === "string" && parsed.reason.trim()
         ? parsed.reason.trim()
         : "This answer was the funniest.",
+    aftermath:
+      typeof parsed?.aftermath === "string" && parsed.aftermath.trim()
+        ? parsed.aftermath.trim()
+        : "Things somehow worked out better than expected.",
   };
 }
 

@@ -1,52 +1,11 @@
+import { answerPoolsByRound, fallbackAnswers } from "./answersPool.js";
+
 if (location.hostname === "localhost") {
   const loadTestControl = {
     timerId: null,
     isRunning: false,
     playersSeeded: [],
   };
-
-  const sampleAnswers = [
-    "Always communicate honestly, even when it feels uncomfortable.",
-    "Never go to bed angry, but also don’t argue when both are tired.",
-    "Happy wife, happy life.",
-    "Remember you are on the same team.",
-    "Keep dating each other even after marriage.",
-    "Say thank you for small things.",
-    "Laugh at each other’s bad jokes.",
-    "Compromise, but don’t lose yourself.",
-    "Choose kindness every day.",
-    "Support each other’s dreams.",
-    "Patience is everything.",
-    "Never stop flirting.",
-    "Travel together often.",
-    "Listen more, assume less.",
-    "Say sorry quickly.",
-    "Respect each other’s space.",
-    "Don’t sweat small things.",
-    "Keep the spark alive.",
-    "Be best friends first.",
-    "Eat together when possible.",
-    "Give each other grace.",
-    "Don’t compare your marriage.",
-    "Be honest about everything.",
-    "Hug first, argue later.",
-    "Grow together, not apart.",
-    "Share food, share love.",
-    "Celebrate small wins.",
-    "Trust each other fully.",
-    "Love is a daily choice.",
-    "Communicate clearly always.",
-    "Marriage is just teamwork with snacks.",
-    "Apologise fast, forgive slowly, order dessert anyway.",
-    "Sometimes the best advice is to just hug first.",
-    "Lower your voice and raise your standards.",
-    "Never underestimate the power of a sincere sorry.",
-    "Date nights are cheaper than counselling.",
-    "If one is dramatic, the other should not audition too.",
-    "Take turns being right.",
-    "Love loudly, nag softly.",
-    "Argue less, laugh more, split the chores fairly.",
-  ];
 
   const defaultTableCodes = [
     "VIP1",
@@ -74,8 +33,33 @@ if (location.hostname === "localhost") {
     "23",
   ];
 
-  function randomAnswer() {
-    return sampleAnswers[Math.floor(Math.random() * sampleAnswers.length)];
+  function getWeightedRandomBucket() {
+    const roll = Math.random();
+
+    if (roll < 0.65) return "strong";
+    if (roll < 0.9) return "medium";
+    return "weak";
+  }
+
+  function randomAnswerForRound(round) {
+    const poolSet = answerPoolsByRound[round];
+
+    if (!poolSet) {
+      return fallbackAnswers[
+        Math.floor(Math.random() * fallbackAnswers.length)
+      ];
+    }
+
+    const bucket = getWeightedRandomBucket();
+    const bucketPool = poolSet[bucket];
+
+    if (!Array.isArray(bucketPool) || bucketPool.length === 0) {
+      return fallbackAnswers[
+        Math.floor(Math.random() * fallbackAnswers.length)
+      ];
+    }
+
+    return bucketPool[Math.floor(Math.random() * bucketPool.length)];
   }
 
   function shuffle(array) {
@@ -122,6 +106,20 @@ if (location.hostname === "localhost") {
       table_code: tableCodes[index % tableCodes.length],
       room_code: roomCode,
     }));
+  }
+
+  async function getCurrentRoundState() {
+    const { data, error } = await client
+      .from("game_state")
+      .select("round_number, phase")
+      .eq("id", 1)
+      .single();
+
+    if (error || !data) {
+      throw new Error("Unable to load current game state.");
+    }
+
+    return data;
   }
 
   async function clearOldLoadTestData(round) {
@@ -203,22 +201,24 @@ if (location.hostname === "localhost") {
   window.simulateRoundLoadTest = async function (total = 230) {
     stopLoadTestInternal();
 
-    const round = currentGameState?.round_number;
-    const phase = currentGameState?.phase;
     const durationSeconds = 60;
     const totalDurationMs = durationSeconds * 1000;
 
-    if (!round) {
-      console.error("No current round number found.");
-      return;
-    }
-
-    if (phase !== "answering") {
-      console.error("Game must be in answering phase before load testing.");
-      return;
-    }
-
     try {
+      const gameState = await getCurrentRoundState();
+      const round = gameState?.round_number;
+      const phase = gameState?.phase;
+
+      if (!round) {
+        console.error("No current round number found.");
+        return;
+      }
+
+      if (phase !== "answering") {
+        console.error("Game must be in answering phase before load testing.");
+        return;
+      }
+
       console.log(
         `Starting clean load test for ${total} players on round ${round}`,
       );
@@ -257,7 +257,7 @@ if (location.hostname === "localhost") {
         const row = {
           name: player.name,
           table_code: player.table_code,
-          answer: randomAnswer(),
+          answer: randomAnswerForRound(round),
           round_number: round,
         };
 

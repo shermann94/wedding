@@ -403,8 +403,12 @@ const ROUND_DURATION = 60; // seconds
 async function startGame() {
   if (isBusy) return;
   setBusy(true, { startLoading: true });
-
   try {
+    if (!livePlayerCount || livePlayerCount === 0) {
+      alert("❌ Cannot start game — no players have joined.");
+      return;
+    }
+
     const { data: scenarioData, error: scenarioError } = await client
       .from("scenarios")
       .select("*")
@@ -624,7 +628,7 @@ function spawnAnswerBubble(text) {
 
   setTimeout(() => {
     if (bubble.parentNode) bubble.remove();
-  }, 3800);
+  }, 4200);
 }
 
 async function getWinnerAvatar(playerName, tableCode) {
@@ -756,12 +760,13 @@ async function loadWinnerForRound(round) {
       "🏆 Best Marriage Advice";
 
     document.getElementById("winner-answer").innerHTML = `
-  ${avatar ? `<img src="${avatar}" class="winner-avatar" alt="${data.player_name}" />` : ""}
   <span>“${data.answer}”</span>
 `;
 
-    document.getElementById("winner-player").innerText =
-      `— ${data.player_name} (Table ${data.table_code})`;
+    document.getElementById("winner-player").innerHTML = `
+  ${avatar ? `<img src="${avatar}" class="winner-avatar" alt="${data.player_name}" />` : ""}
+  <span>${data.player_name} (Table ${data.table_code})</span>
+`;
 
     document.getElementById("winner-reason").innerText =
       `🤖 AI Judge: ${data.reason || "No reason provided."}`;

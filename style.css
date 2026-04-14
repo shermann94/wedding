@@ -241,8 +241,6 @@ textarea {
 }
 
 #scenario-card {
-  max-width: 1250px;
-  min-height: 190px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -258,7 +256,7 @@ textarea {
 
 .answers-box {
   position: relative;
-  width: 88%;
+  width: 100%;
   max-width: 1250px;
   overflow: hidden;
   pointer-events: none;
@@ -294,7 +292,6 @@ textarea {
 
 #winner-card {
   max-width: 1250px;
-  min-height: 260px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -317,6 +314,11 @@ textarea {
 #winner-player {
   font-size: 22px;
   margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 #winner-reason {
@@ -371,6 +373,8 @@ textarea {
 
 #winner-answer span {
   display: inline-block;
+  font-style: italic;
+  font-weight: 400;
 }
 
 /* CONTROLS */
@@ -518,7 +522,6 @@ textarea {
 
 /* LeaderBoard */
 #leaderboard-card {
-  width: 88%;
   max-width: 900px;
   padding: 28px 24px 24px;
   border-radius: 32px;
@@ -854,7 +857,6 @@ body.game-started .game-logo {
 
 /* wrapper keeps same width as scenario */
 .scenario-wrapper {
-  width: 88%;
   max-width: 1250px;
   margin: 0 auto; /* ⭐ THIS FIXES IT */
 }

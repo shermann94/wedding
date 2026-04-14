@@ -327,6 +327,12 @@ textarea {
   line-height: 1.35;
 }
 
+#winner-aftermath {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.35;
+}
+
 #winner-loading {
   display: flex;
   flex-direction: column;

@@ -1,6 +1,5 @@
 const supabaseUrl = "https://dmztipmhrwxdjnogznvi.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU";
+const supabaseKey = "sb_publishable_GprPBK44VLeb-3P7_qgOKA_WBpVkOSq";
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 window.client = client;
 
@@ -321,8 +320,22 @@ client
   .channel("players-channel")
   .on(
     "postgres_changes",
-    { event: "*", schema: "public", table: "players" },
-    async () => {
+    { event: "INSERT", schema: "public", table: "players" },
+    async (payload) => {
+      await updatePlayerCount();
+    },
+  )
+  .on(
+    "postgres_changes",
+    { event: "UPDATE", schema: "public", table: "players" },
+    async (payload) => {
+      await updatePlayerCount();
+    },
+  )
+  .on(
+    "postgres_changes",
+    { event: "DELETE", schema: "public", table: "players" },
+    async (payload) => {
       await updatePlayerCount();
     },
   )
@@ -565,6 +578,7 @@ async function resetGame() {
         phase: "waiting",
         round_number: 1,
         scenario: "Waiting for round to start...",
+        round_ends_at: null,
       })
       .eq("id", 1);
 
@@ -1054,9 +1068,10 @@ function renderPlayerList(players) {
   latestPlayers.reverse().forEach((p) => {
     const div = document.createElement("div");
     div.className = "player-card";
+    const avatarSrc = p.avatar || "assets/avatars/Magikarp.png";
 
     div.innerHTML = `
-      <img src="${p.avatar}" class="player-avatar" />
+      <img src="${avatarSrc}" class="player-avatar" />
       <div class="player-name">${p.name}</div>
     `;
 

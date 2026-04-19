@@ -111,7 +111,6 @@ function showWinnerError(message) {
   document.getElementById("winner-answer").innerText = "";
   document.getElementById("winner-player").innerText = "";
   document.getElementById("winner-reason").innerText = message;
-  document.getElementById("winner-aftermath").innerText = "";
 }
 
 function clearWinnerCard() {
@@ -120,7 +119,6 @@ function clearWinnerCard() {
   document.getElementById("winner-answer").innerText = "";
   document.getElementById("winner-player").innerText = "";
   document.getElementById("winner-reason").innerText = "";
-  document.getElementById("winner-aftermath").innerText = "";
 }
 
 function hideAllHostPanels() {
@@ -138,7 +136,6 @@ function showNoWinnerCard() {
   document.getElementById("winner-player").innerText = "";
   document.getElementById("winner-reason").innerText =
     "There are no eligible winners this round.";
-  document.getElementById("winner-aftermath").innerText = "";
 }
 
 function renderRoundLabel() {
@@ -268,7 +265,7 @@ async function loadGame() {
     await updatePlayerCount();
     setPhaseUI(data.phase);
 
-    if (data.phase === "answering") {
+    if (data.phase !== "waiting") {
       document.body.classList.add("game-started");
     } else {
       document.body.classList.remove("game-started");
@@ -350,9 +347,9 @@ client
       const phase = payload.new.phase;
 
       // change logo state
-      if (phase === "answering") {
+      if (phase !== "waiting") {
         document.body.classList.add("game-started");
-      } else if (phase === "waiting") {
+      } else {
         document.body.classList.remove("game-started");
       }
 
@@ -670,6 +667,7 @@ async function getWinnerAvatar(playerName, tableCode) {
 }
 
 async function renderLeaderboard() {
+  if (currentGameState.phase !== "leaderboard") return;
   const list = document.getElementById("leaderboard-list");
 
   try {
@@ -787,10 +785,6 @@ async function loadWinnerForRound(round) {
 
     document.getElementById("winner-reason").innerText =
       `🤖 AI Judge: ${data.reason || "No reason provided."}`;
-
-    document.getElementById("winner-aftermath").innerText = data.aftermath
-      ? `✨ What happened next: ${data.aftermath}`
-      : "";
   } catch (err) {
     console.error("Unexpected loadWinnerForRound error:", err);
     showWinnerError("Something went wrong while loading the winner.");
@@ -963,9 +957,6 @@ async function evaluateAnswers() {
         table_code: winner.table_code,
         answer: winner.answer,
         reason: result.reason || "No reason provided.",
-        aftermath:
-          result.aftermath ||
-          "Oops, the AI did not provide an aftermath for this answer.",
       },
     ]);
 

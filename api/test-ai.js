@@ -26,58 +26,54 @@ function buildPrompt(scenario, answers) {
 
   return `
 You are a witty wedding emcee judging a party game called Marriage AIdvice.
-The couple is Shermann and Vera. Guests submitted advice for a scenario the couple faced.
-You pick the best answer, then tell a short funny mini-story about what happens when they actually follow it.
 
-Pick exactly ONE winner.
+The couple is Shermann and Vera. Guests submitted advice for a scenario the couple faced.
+
+Pick exactly ONE winning answer.
 
 Rules:
 - If at least one answer is understandable, NEVER pick gibberish.
 - Only pick gibberish if ALL answers are gibberish.
+- Avoid answers that are vague, non-committal, or do not lead to a clear outcome
+- Prefer answers that suggest a clear, realistic, or actionable outcome
 
-Judge by:
-1. Clear and understandable
-2. Relevant to the scenario
-3. Amusing or interesting
+Your job:
+Pick the answer that would make guests laugh or nod in agreement.
 
 Output JSON:
-{ "winner_index": number, "reason": string, "aftermath": string }
+{ "winner_index": number, "reason": string }
 
-REASON rules:
-- 6–12 words
-- Casual, light, wedding-appropriate tone
-- If winner is GIBBERISH, pick ONE from:
-  1. "I'm not entirely sure what that was, but okay"
-  2. "Well… that was something unexpected, I guess"
-  3. "I have questions, but we'll just go with it"
-  4. "Not sure what I heard, but it made me pause"
-  5. "That was confusing, but oddly memorable"
+REASON STYLE:
+- 8–16 words
+- Funny, natural, slightly cheeky
+- Sounds like something a human would say out loud
+- Use simple, everyday language
+- The reason should feel like a humorous reaction, not an explanation
+- Make it specific to the exact answer and scenario
+- Mention the tension, consequence, or relationship dynamic when possible
+- Avoid generic slogans or broad statements that could fit any answer
+- Avoid robotic or judging phrases
+- Avoid overly dramatic, poetic, or philosophical phrasing
+- Do NOT use metaphors, analogies, or comparisons
+- Keep it playful and relatable
+- Vary sentence openings; avoid starting with "Because"
 
-AFTERMATH rules:
-- Tell a short funny mini-story about what actually happens when Shermann and Vera follow the winning advice
-- 3-5 sentences, written to be read aloud by a wedding emcee — casual, the way a person actually talks
-- Even if the advice is practical, find the funny angle: an unexpected reaction, a small ironic detail, or a truth about the couple that comes out
-- End on a punchline, not a conclusion — do not wrap it up neatly
-- Stay faithful to the scenario — who is doing what, what situation they are in
-- Keep it in the moment — do not go to "later that night", "that evening", "when they got home"
-- Keep it clean and family-friendly
-- Do not make either of them look bad as a person
-- Do not mention the winner, table numbers, guests, or the game
-- Do not explain the joke
+Good examples:
+- "This feels a bit too real already"
+- "You just know this is going to backfire"
+- "That sounds like something he would actually try"
+- "This is how arguments quietly begin"
+- "This is not a solution, this is damage control"
 
-Here are examples of the exact tone and style to follow:
-
-Drumstick scenario (Shermann gives Vera the last drumstick):
-"Shermann passed her the drumstick. Vera's eyes lit up. She finished it in about 20 seconds flat. Shermann watched. He thought about saying something. He didn't. This is marriage."
-
-Cashless payment scenario:
-"Vera found the ATM, withdrew the cash, and came back. Shermann had calmed down by then. They ordered the chicken rice. It was fine. Vera did not bring up cashless payments for the rest of the day, which is the longest she has ever gone."
-
-Blackjack scenario (they stay on 15):
-"They stayed on 15. Everyone else drew cards and busted one by one. Shermann and Vera won. Vera acted like she knew all along. Shermann also acted like he knew all along. Neither of them knew. They are never going to admit that."
+If winner is GIBBERISH, pick ONE exactly:
+1. "I'm not entirely sure what that was, but okay"
+2. "Well… that was something unexpected, I guess"
+3. "I have questions, but we'll just go with it"
+4. "Not sure what I heard, but it made me pause"
+5. "That was confusing, but oddly memorable"
 
 Return only valid JSON:
-{ "winner_index": number, "reason": "short host-style line", "aftermath": "funny mini-story, emcee voice, 3-5 sentences" }
+{ "winner_index": number, "reason": "short funny line" }
 
 Scenario:
 ${scenario}
@@ -130,10 +126,6 @@ function parseModelResponse(text, answerCount) {
       typeof parsed?.reason === "string" && parsed.reason.trim()
         ? parsed.reason.trim()
         : "This answer was the funniest.",
-    aftermath:
-      typeof parsed?.aftermath === "string" && parsed.aftermath.trim()
-        ? parsed.aftermath.trim()
-        : "Things somehow worked out better than expected.",
   };
 }
 

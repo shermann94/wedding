@@ -1,6 +1,5 @@
 const supabaseUrl = "https://dmztipmhrwxdjnogznvi.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtenRpcG1ocnd4ZGpub2d6bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NDUxMzMsImV4cCI6MjA4ODUyMTEzM30.yLr4f8NLnLb7Vcf0kTgEMwQXTY8GbAPIZnLRdv3NzzU";
+const supabaseKey = "sb_publishable_GprPBK44VLeb-3P7_qgOKA_WBpVkOSq";
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
 let isSubmitting = false;
@@ -105,10 +104,10 @@ function clearGameLocalState() {
   localStorage.removeItem("roomCode");
   localStorage.removeItem("joined");
   localStorage.removeItem("submittedRound");
-  // ✅ ADD THESE (this is your fix)
   localStorage.removeItem("avatar");
   localStorage.removeItem("playerId");
   localStorage.removeItem("playerToken");
+  localStorage.removeItem("avatarConfirmed");
 }
 
 function setSubmitButtonLoading(isLoading) {
@@ -279,7 +278,7 @@ window.onload = async function () {
     const token = localStorage.getItem("playerToken");
 
     if (token) {
-      const { data: player, error } = await client
+      const { data: player } = await client
         .from("players")
         .select("*")
         .eq("player_token", token)
@@ -290,13 +289,17 @@ window.onload = async function () {
         localStorage.setItem("tableCode", player.table_code);
         localStorage.setItem("roomCode", player.room_code);
         localStorage.setItem("joined", "true");
-        localStorage.setItem("playerId", player.id); // ✅ ADD THIS
+        localStorage.setItem("playerId", player.id);
 
         if (player?.avatar && player.avatar !== "null") {
           localStorage.setItem("avatar", player.avatar);
+          localStorage.setItem("avatarConfirmed", "true");
         } else {
           localStorage.removeItem("avatar");
+          localStorage.removeItem("avatarConfirmed");
         }
+      } else {
+        clearGameLocalState();
       }
     }
 
@@ -483,8 +486,7 @@ async function joinGame() {
 
     //Phase Check
     if (game.phase !== "waiting" && !existingPlayer) {
-      document.getElementById("join-error").innerText =
-        "❌ The game has already started.";
+      alert("❌ The game has already started.");
       return;
     }
 
@@ -544,10 +546,13 @@ async function joinGame() {
 
     updatePlayerInfoUI();
 
-    // ✅ check if avatar already selected
-    const existingAvatar = localStorage.getItem("avatar");
+    const existingAvatar =
+      (existingPlayer && existingPlayer.avatar) ||
+      localStorage.getItem("avatar");
 
     if (existingAvatar && existingAvatar !== "null") {
+      localStorage.setItem("avatar", existingAvatar);
+      localStorage.setItem("avatarConfirmed", "true");
       showWaiting();
       return;
     }

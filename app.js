@@ -170,8 +170,7 @@ function sanitizeTableCode(value) {
   return String(value || "")
     .trim()
     .toUpperCase()
-    .replace(/\s+/g, " ")
-    .replace(/\s*-\s*/g, "-");
+    .replace(/[\s-]+/g, "");
 }
 
 function setFieldError(inputId, message) {
@@ -380,13 +379,6 @@ async function joinGame() {
       alert("Failed to load game settings.");
       return;
     }
-    /* old placement of waiting
-    if (game.phase !== "waiting") {
-      document.getElementById("join-error").innerText =
-        "❌ The game has already started.";
-      return;
-    }
-    */
 
     const playerName = document.getElementById("name").value.trim();
     const rawTableInput = document.getElementById("table").value;

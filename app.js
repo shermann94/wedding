@@ -775,26 +775,54 @@ function resetGame() {
 function containsBannedWords(answer) {
   const bannedWords = [
     "fuck",
-    "bitch",
-    "cb",
-    "knn",
-    "fark",
-    "pussy",
-    "stupid",
-    "dumb",
-    "idiot",
-    "asshole",
+    "fuk",
+    "fuc",
     "shit",
+    "bitch",
+    "bish",
     "bastard",
+    "asshole",
+    "arsehole",
     "dick",
+    "cock",
+    "pussy",
+    "pooseh",
+    "poosy",
+    "poosie",
     "cunt",
     "slut",
     "whore",
+    "cb",
+    "ccb",
+    "knn",
+    "knnb",
+    "kanina",
+    "kaninabe",
+    "lanjiao",
+    "lj",
+    "stupid",
+    "dumb",
+    "idiot",
+    "moron",
     "nigger",
     "nigga",
     "faggot",
   ];
 
-  const text = answer.toLowerCase();
+  const text = String(answer || "")
+    .toLowerCase()
+    // 🔥 normalize first
+    .replace(/@/g, "a")
+    .replace(/!/g, "i")
+    .replace(/\$/g, "s")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t")
+    .replace(/0/g, "o")
+    .replace(/1/g, "i")
+    .replace(/3/g, "e")
+    // then clean
+    .replace(/[^a-z0-9]/g, "")
+    .replace(/(.)\1{2,}/g, "$1$1");
+
   return bannedWords.some((banned) => text.includes(banned));
 }

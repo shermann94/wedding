@@ -36,6 +36,7 @@ Rules:
 - Only pick gibberish if ALL answers are gibberish.
 - Avoid answers that are vague, non-committal, or do not lead to a clear outcome
 - Prefer answers that suggest a clear, realistic, or actionable outcome
+- NEVER pick answers containing vulgarities, insults, slurs, or inappropriate language.
 
 Your job:
 Pick the answer that would make guests laugh or nod in agreement.

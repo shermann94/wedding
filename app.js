@@ -396,7 +396,7 @@ async function joinGame() {
     }
 
     if (!playerName || !rawTableInput || !enteredRoomCode) {
-      alert("Please fill in your name, table number and room code.");
+      alert("Please fill in your name, table number and game code.");
       return;
     }
 
@@ -424,7 +424,7 @@ async function joinGame() {
         "table",
         "❌ Table number not found. Please check your table number.",
       );
-    if (isRoomCodeWrong) setFieldError("roomcode", "❌ Wrong room code.");
+    if (isRoomCodeWrong) setFieldError("roomcode", "❌ Wrong game code.");
     if (isTableWrong || isRoomCodeWrong) return;
 
     /* Old identification

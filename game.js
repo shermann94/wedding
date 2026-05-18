@@ -642,7 +642,7 @@ function spawnAnswerBubble(text) {
 
   setTimeout(() => {
     if (bubble.parentNode) bubble.remove();
-  }, 4200);
+  }, 5000);
 }
 
 async function getWinnerAvatar(playerName, tableCode) {

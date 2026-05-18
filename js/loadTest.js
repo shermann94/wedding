@@ -79,7 +79,7 @@ if (location.hostname === "localhost") {
       .single();
 
     if (error || !data?.room_code) {
-      throw new Error("Unable to load room code from game_state.");
+      throw new Error("Unable to load game code from game_state.");
     }
 
     return data.room_code;
